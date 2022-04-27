@@ -7,8 +7,8 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="trezorpass",
-    version="0.0.2",
+    name="trezor-pass",
+    version="0.0.3",
     description="Trezor Password Manager Command-Line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -27,7 +27,7 @@ setup(
     install_requires=["trezor", "cryptography", "inquirerpy", "dropbox"],
     entry_points={
         "console_scripts": [
-            "trezorpass=trezorpass.cli:cli",
+            "trezor-pass=trezorpass.cli:cli",
         ],
     },
     project_urls={
