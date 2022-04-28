@@ -1,10 +1,11 @@
 # Trezor Password Manager CLI
 
-Command-line alternative to the [Trezor Password Manager](https://trezor.io/passwords/) project. This project is aiming for compatibility in password store encryption, encoding and structure. Meaning users will be able to read and write to the same password store regardless of which project they use.
+Command-line alternative to the [Trezor Password Manager](https://trezor.io/passwords/) project. This project is aiming for compatibility in password store encryption, encoding and structure. Users will be able to read and write to the same password store regardless of which project they use.
 
-### Installation
+### Run
 
-Install with pip: `pip install trezorpass`
+- Install with pip: `$ pip install trezor-pass`
+- Run: `$ trezor-pass`
 
 ### Limitations
 
