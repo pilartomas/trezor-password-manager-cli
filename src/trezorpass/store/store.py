@@ -53,14 +53,10 @@ class Store:
     @staticmethod
     def load(client: TrezorClient) -> Store:
         location = inquirer.select("Where is the password store located at?", choices=[
-            Choice(StoreLocation.GoogleDrive, "Google Drive"),
             Choice(StoreLocation.Dropbox, "Dropbox"),
             Choice(StoreLocation.Filepath, "Filepath")
         ]).execute()
-        if location == StoreLocation.GoogleDrive:
-            print("Google Drive is not yet supported")
-            raise Exception("Unsupported option")
-        elif location == StoreLocation.Dropbox:
+        if location == StoreLocation.Dropbox:
             store = Store(client, DropboxManager())
         elif location == StoreLocation.Filepath:
             store = Store(client, FileManager())
