@@ -10,7 +10,7 @@ from InquirerPy import inquirer
 
 from trezorpass.entry import Entry
 from trezorpass.store import Store
-from trezorpass.store.store import StoreDecodeError
+from trezorpass.store.store import StoreDecodeError, StoreDecryptError
 from trezorpass.utils import PROMPT, prompt_print, welcome, goodbye
 
 def select_entry(entries: List[Entry]) -> Entry:
@@ -49,9 +49,11 @@ def get_store(client: TrezorClient) -> Store:
             prompt_print("Trezor operation has been cancelled")
         except PinException:
             prompt_print("Invalid pin")
-        except UnicodeDecodeError or StoreDecodeError:
+        except StoreDecryptError:
+            prompt_print("Unable to decrypt password store")
+        except StoreDecodeError:
             prompt_print("Unable to decode password store")
-        retry = inquirer.confirm("Try another store?", default=True, qmark=PROMPT, amark=PROMPT).execute()
+        retry = inquirer.confirm("Retry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
         if retry is False:
             goodbye()
             exit(1)
@@ -84,7 +86,8 @@ def cli():
                 loop = inquirer.confirm(message="Choose another entry?", default=False).execute()
                 if not loop:
                     break
-            except USBError as err:
+            except USBError:
+                client = None
                 prompt_print("Connection to the Trezor device has been lost")
     except KeyboardInterrupt:
         pass
