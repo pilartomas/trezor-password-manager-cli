@@ -14,7 +14,8 @@ APP_DIR = appdirs.user_data_dir('trezor-pass')
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
 
 class DropboxManager(Manager):
-    def __init__(self):
+    def __init__(self, filename: str):
+        self.filename = filename
         try:
             with open(DROPBOX_TOKEN_FILE, 'r') as file:
                 self.oauth = json.load(file)
@@ -48,7 +49,8 @@ class DropboxManager(Manager):
         except Exception as ex:
             pass
 
-    def get_password_store(self, filename: str) -> bytes:
+    @property
+    def password_store(self) -> bytes:
         if not self.oauth:
             self.authenticate()
         else:
@@ -60,5 +62,5 @@ class DropboxManager(Manager):
             oauth2_access_token_expiration=datetime.fromisoformat(self.oauth["expiration"]),
             app_key=DROPBOX_APP_KEY
         ) as dbx:
-            (_, response) = dbx.files_download("/" + filename)
+            (_, response) = dbx.files_download("/" + self.filename)
             return response.content

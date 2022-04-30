@@ -1,3 +1,4 @@
 class Manager:
-    def get_password_store(self, filename: str) -> bytes:
+    @property
+    def password_store(self) -> bytes:
         raise NotImplementedError()

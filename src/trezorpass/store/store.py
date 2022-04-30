@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import Callable, List
 import json
 from hmac import HMAC
 from hashlib import sha256
@@ -17,11 +17,18 @@ from .store_location import StoreLocation
 from ..tag import Tag
 
 class Store:
-    def __init__(self, client: TrezorClient, manager: Manager):
-        self._master_key = self._get_master_key(client)
-        self._manager = manager
+    def __init__(self, client: TrezorClient, manager_factory: Callable[[Store], Manager]):
+        self._client = client
         self.entries: List[Entry] = []
         self.tags: List[Tag] = []
+        self._lazy_master_key = None
+        self._manager = manager_factory(self)
+
+    @property
+    def _master_key(self) -> str:
+        if not self._lazy_master_key:
+            self._lazy_master_key = self._get_master_key(self._client)
+        return self._lazy_master_key
 
     @staticmethod
     def _get_master_key(client: TrezorClient) -> str:
@@ -57,11 +64,11 @@ class Store:
             Choice(StoreLocation.Filepath, "Filepath")
         ]).execute()
         if location == StoreLocation.Dropbox:
-            store = Store(client, DropboxManager())
+            store = Store(client, lambda store: DropboxManager(store.filename))
         elif location == StoreLocation.Filepath:
-            store = Store(client, FileManager())
+            store = Store(client, lambda store: FileManager())
         else:
             raise Exception("Unreachable code")
 
-        json_store = Store._decrypt_store(store._manager.get_password_store(store.filename), store)
+        json_store = Store._decrypt_store(store._manager.password_store, store)
         return Store._decode_store(json_store, store)
