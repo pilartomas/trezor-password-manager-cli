@@ -24,7 +24,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     python_requires=">=3.9, <4",
-    install_requires=["trezor", "cryptography", "inquirerpy", "dropbox"],
+    install_requires=["trezor", "cryptography", "inquirerpy", "dropbox", "appdirs"],
     entry_points={
         "console_scripts": [
             "trezor-pass=trezorpass.cli:cli",

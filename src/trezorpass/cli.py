@@ -1,11 +1,12 @@
 from typing import List
 
 from trezorlib.client import get_default_client
+from trezorlib.transport import TransportException
 
 from InquirerPy import inquirer
 
-from .entry import Entry
-from .store import Store
+from trezorpass.entry import Entry
+from trezorpass.store import Store
 
 def select_entry(entries: List[Entry]) -> Entry:
     '''Lets the user select an entry'''
@@ -21,17 +22,23 @@ def print_trezor():
     print("Proceed on your Trezor device")
 
 def cli():
-    try:
-        client = get_default_client()
-    except:
-        print("No available Trezor device")
-        exit(1)
+    client = None
+    while not client:
+        try:
+            client = get_default_client()
+        except TransportException as ex:
+            retry = inquirer.confirm("No available Trezor device, please plug it in and retry. Proceed?", default=True, amark="#").execute()
+            if not retry:
+                exit(1)
 
-    try:
-        store = Store.load(client)
-    except:
-        print("Loading of the password store failed")
-        exit(1)
+    store = None
+    while not store:
+        try:
+            store = Store.load(client)
+        except Exception as ex:
+            retry = inquirer.confirm("Failed to load the password store, please retry. Proceed?", default=True, amark="#").execute()
+            if not retry:
+                exit(1)
 
     while True:
         try:
