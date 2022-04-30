@@ -1,13 +1,16 @@
 from turtle import color
 from typing import List
 
-from trezorlib.client import get_default_client
+from trezorlib.client import get_default_client, TrezorClient
 from trezorlib.transport import TransportException
+from trezorlib.exceptions import Cancelled, PinException
+from libusb1 import USBError
 
 from InquirerPy import inquirer
 
 from trezorpass.entry import Entry
 from trezorpass.store import Store
+from trezorpass.store.store import StoreDecodeError
 from trezorpass.utils import PROMPT, prompt_print, welcome, goodbye
 
 def select_entry(entries: List[Entry]) -> Entry:
@@ -23,34 +26,52 @@ def select_entry(entries: List[Entry]) -> Entry:
 def print_trezor():
     print("Proceed on your Trezor device")
 
+def get_client() -> TrezorClient:
+    client = None
+    while not client:
+        try:
+            client = get_default_client()
+            prompt_print("Device ready")
+        except TransportException as ex:
+            prompt_print("No available Trezor device")
+            retry = inquirer.confirm("Retry?", long_instruction="Make sure your Trezor device is connected before proceeding", qmark=PROMPT, amark=PROMPT, default=True, mandatory=False).execute()
+            if retry is False:
+                goodbye()
+                exit(1)
+    return client
+
+def get_store(client: TrezorClient) -> Store:
+    store = None
+    while not store:
+        try:
+            store = Store.load(client)
+        except Cancelled:
+            prompt_print("Trezor operation has been cancelled")
+        except PinException:
+            prompt_print("Invalid pin")
+        except UnicodeDecodeError or StoreDecodeError:
+            prompt_print("Unable to decode password store")
+        retry = inquirer.confirm("Try another store?", default=True, qmark=PROMPT, amark=PROMPT).execute()
+        if retry is False:
+            goodbye()
+            exit(1)
+    return store
+
 def cli():
     welcome()
-
     try:
         client = None
-        while not client:
-            try:
-                client = get_default_client()
-                prompt_print("Device ready")
-            except TransportException as ex:
-                prompt_print("No available Trezor device")
-                retry = inquirer.confirm("Retry?", long_instruction="Make sure your Trezor device is connected before proceeding", qmark=PROMPT, amark=PROMPT, default=True, mandatory=False).execute()
-                if retry is False:
-                    exit(1)
-
         store = None
-        while not store:
-            try:
-                store = Store.load(client)
-            except Exception as ex:
-                retry = inquirer.confirm("Failed to load the password store, please retry. Retry?", default=True, qmark=PROMPT, amark=PROMPT, mandatory=False).execute()
-                if retry is False:
-                    exit(1)
-
         while True:
+            if not client:
+                client = get_client()
+                if store:
+                    store.client = client
+            try:
+                if not store:
+                    store = get_store(client)
                 selected_entry = select_entry(store.entries)
                 print(selected_entry)
-
                 if not selected_entry.decrypted:
                     decrypt = inquirer.confirm(message="Decrypt entry?", default=False).execute()
                     if decrypt:
@@ -60,13 +81,13 @@ def cli():
                             print(selected_entry)
                         except:
                             print("Decryption Failed")
-
                 loop = inquirer.confirm(message="Choose another entry?", default=False).execute()
                 if not loop:
                     break
+            except USBError as err:
+                prompt_print("Connection to the Trezor device has been lost")
     except KeyboardInterrupt:
         pass
-
     goodbye()
 
 if __name__ == "__main__":

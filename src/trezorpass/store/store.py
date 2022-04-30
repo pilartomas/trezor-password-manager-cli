@@ -7,6 +7,7 @@ from hashlib import sha256
 from trezorlib.misc import encrypt_keyvalue
 from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
+from trezorlib.transport import TransportException
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
@@ -18,7 +19,7 @@ from ..tag import Tag
 
 class Store:
     def __init__(self, client: TrezorClient, manager_factory: Callable[[Store], Manager]):
-        self._client = client
+        self.client = client
         self.entries: List[Entry] = []
         self.tags: List[Tag] = []
         self._lazy_master_key = None
@@ -27,7 +28,7 @@ class Store:
     @property
     def _master_key(self) -> str:
         if not self._lazy_master_key:
-            self._lazy_master_key = self._get_master_key(self._client)
+            self._lazy_master_key = self._get_master_key(self.client)
         return self._lazy_master_key
 
     @staticmethod
@@ -36,7 +37,6 @@ class Store:
         key = "Activate TREZOR Password Manager?"
         value = bytes.fromhex("2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee")
         return encrypt_keyvalue(client, address_n, key, value).hex()
-
     @property
     def filename(self) -> str:
         file_key = self._master_key[:len(self._master_key) // 2]
@@ -51,11 +51,14 @@ class Store:
     @staticmethod
     def _decode_store(json_store: str, store: Store) -> Store:
         '''Returns object representation of the password store'''
-        dict = json.loads(json_store)
-        tags = {int(key): Tag.load(dict['tags'][key]) for key in dict['tags']}
-        store.tags = [tags[key] for key in tags]
-        store.entries = [Entry.load(dict['entries'][key], tags) for key in dict['entries']]
-        return store
+        try:
+            dict = json.loads(json_store)
+            tags = {int(key): Tag.load(dict['tags'][key]) for key in dict['tags']}
+            store.tags = [tags[key] for key in tags]
+            store.entries = [Entry.load(dict['entries'][key], tags) for key in dict['entries']]
+            return store
+        except:
+            raise StoreDecodeError()
 
     @staticmethod
     def load(client: TrezorClient) -> Store:
@@ -72,3 +75,6 @@ class Store:
 
         json_store = Store._decrypt_store(store._manager.password_store, store)
         return Store._decode_store(json_store, store)
+
+class StoreDecodeError(Exception):
+    pass
