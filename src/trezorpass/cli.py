@@ -20,6 +20,8 @@ def select_entry(entries: List[Entry]) -> Entry:
     selection = inquirer.fuzzy(
         message="Select an entry:",
         choices=choices,
+        qmark=PROMPT,
+        amark=PROMPT
     ).execute()
     return selection
 

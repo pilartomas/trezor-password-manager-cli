@@ -27,17 +27,18 @@ class DropboxManager(Manager):
             self.oauth = None
 
     def authenticate(self):
-        while not auth_code:
+        oauth_result = None
+        while not oauth_result:
             auth_flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, use_pkce=True, token_access_type='offline')
             authorize_url = auth_flow.start()
             prompt_print("1. Go to: " + authorize_url, DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             prompt_print("2. Click \"Allow\" (you might have to log in first).", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             prompt_print("3. Copy the authorization code.", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             try:
-                auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style)
+                auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute()
                 oauth_result = auth_flow.finish(auth_code)
             except:
-                retry = inquirer.confirm("Invalid authorization code, retry?", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style)
+                retry = inquirer.confirm("Invalid authorization code, retry?", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute()
                 if not retry:
                     raise Exception()
         self.oauth = {
@@ -46,7 +47,7 @@ class DropboxManager(Manager):
             "expiration": oauth_result.expires_at.isoformat()
             }
         try:
-            Path(APP_DIR).mkdir(parents=True)
+            Path(APP_DIR).mkdir(parents=True, exist_ok=True)
             with open(DROPBOX_TOKEN_FILE, 'w+') as file:
                 os.chmod(DROPBOX_TOKEN_FILE, 0o600)
                 file.write(json.dumps(self.oauth))
