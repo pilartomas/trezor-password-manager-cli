@@ -11,6 +11,8 @@ from trezorlib.transport import TransportException
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
+from trezorpass.utils import prompt_trezor
+
 from ..crypto import PATH, FILENAME_MESS, decrypt
 from ..entry import Entry
 from .managers import Manager, DropboxManager, FileManager
@@ -36,6 +38,7 @@ class Store:
         address_n = parse_path(PATH)
         key = "Activate TREZOR Password Manager?"
         value = bytes.fromhex("2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee")
+        prompt_trezor()
         return encrypt_keyvalue(client, address_n, key, value).hex()
 
     @property

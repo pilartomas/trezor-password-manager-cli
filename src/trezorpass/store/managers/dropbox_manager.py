@@ -5,13 +5,17 @@ import os
 
 import dropbox
 import appdirs
-from InquirerPy import inquirer
+from InquirerPy import inquirer, get_style
 
 from trezorpass.store.managers.manager import Manager
+from trezorpass.utils import prompt_print
 
 DROPBOX_APP_KEY = "s340kh3l0vla1nv" # APP_KEY of the official TPM, potentionally breaking if maintainers disable PKCE flow for Dropbox auth
 APP_DIR = appdirs.user_data_dir('trezor-pass')
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
+DROPBOX_PROMPT = "(dropbox)"
+DROPBOX_PRIMARY_COLOR = "#007ee5"
+_dropbox_style = get_style({"questionmark": DROPBOX_PRIMARY_COLOR, "answermark": DROPBOX_PRIMARY_COLOR})
 
 class DropboxManager(Manager):
     def __init__(self, filename: str):
@@ -26,14 +30,14 @@ class DropboxManager(Manager):
         while not auth_code:
             auth_flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, use_pkce=True, token_access_type='offline')
             authorize_url = auth_flow.start()
-            print("1. Go to: " + authorize_url)
-            print("2. Click \"Allow\" (you might have to log in first).")
-            print("3. Copy the authorization code.")
+            prompt_print("1. Go to: " + authorize_url, DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
+            prompt_print("2. Click \"Allow\" (you might have to log in first).", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
+            prompt_print("3. Copy the authorization code.", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             try:
-                auth_code = inquirer.text("Enter the authorization code here:")
+                auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style)
                 oauth_result = auth_flow.finish(auth_code)
             except:
-                retry = inquirer.confirm("Invalid authorization code, retry?")
+                retry = inquirer.confirm("Invalid authorization code, retry?", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style)
                 if not retry:
                     raise Exception()
         self.oauth = {

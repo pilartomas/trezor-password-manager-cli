@@ -23,9 +23,6 @@ def select_entry(entries: List[Entry]) -> Entry:
     ).execute()
     return selection
 
-def print_trezor():
-    print("Proceed on your Trezor device")
-
 def get_client() -> TrezorClient:
     client = None
     while not client:
@@ -75,15 +72,14 @@ def cli():
                 selected_entry = select_entry(store.entries)
                 print(selected_entry)
                 if not selected_entry.decrypted:
-                    decrypt = inquirer.confirm(message="Decrypt entry?", default=False).execute()
+                    decrypt = inquirer.confirm(message="Decrypt the entry?", default=False, qmark=PROMPT, amark=PROMPT).execute()
                     if decrypt:
                         try:
-                            print_trezor()
                             selected_entry.decrypt(client)
                             print(selected_entry)
                         except:
-                            print("Decryption Failed")
-                loop = inquirer.confirm(message="Choose another entry?", default=False).execute()
+                            prompt_print("Unable to decrypt the entry")
+                loop = inquirer.confirm(message="Choose another entry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
                 if not loop:
                     break
             except USBError:

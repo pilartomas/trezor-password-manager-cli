@@ -3,3 +3,4 @@ cryptography==3.4.7
 inquirerpy==0.3.3
 dropbox==11.29.0
 appdirs==1.4.4
+libusb1==1.0.24

@@ -6,6 +6,8 @@ from trezorlib.misc import decrypt_keyvalue
 from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
 
+from trezorpass.utils import prompt_trezor
+
 from .crypto import PATH, decrypt
 from .tag import Tag
 
@@ -58,6 +60,7 @@ class Entry:
             domain = self.url
         key = f'Unlock {domain} for user {self.username}?'
         value = bytes.fromhex(self.nonce)
+        prompt_trezor()
         return decrypt_keyvalue(client, address_n, key, value, ask_on_encrypt=False).hex()
 
     def decrypt(self, client: TrezorClient):
