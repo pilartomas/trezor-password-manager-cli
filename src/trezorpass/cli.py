@@ -38,10 +38,9 @@ def get_client() -> TrezorClient:
     return client
 
 def get_store(client: TrezorClient) -> Store:
-    store = None
-    while not store:
+    while True:
         try:
-            store = Store.load(client)
+            return Store.load(client)
         except Cancelled:
             prompt_print("Trezor operation has been cancelled")
         except PinException:
@@ -54,7 +53,6 @@ def get_store(client: TrezorClient) -> Store:
         if retry is False:
             goodbye()
             exit(1)
-    return store
 
 def cli():
     welcome()
