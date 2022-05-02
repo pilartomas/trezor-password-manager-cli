@@ -13,4 +13,4 @@ Current version has some limitations
 
 - Only reading is supported at the moment, store creation and updates will come later on.
 - Tested on Trezor One. Some additional complexity around PASSPHRASE on Trezor T needs to be handled. (Might be bypassed by correctly setting the PASSPHRASE env variable)
-- Google Drive storage is not yet supported (Can be bypassed direcly specifying the store file)
+- Google Drive storage is not yet supported (Can be bypassed by direcly specifying the store file)
