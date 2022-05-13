@@ -11,9 +11,25 @@ def prompt_trezor():
     prompt_print("Proceed on your trezor device")
 
 def welcome():
-    print("###################################")
-    color_print([("class:padding", "### "), ("class:title", "Trezor Password Manager CLI"),("class:padding", " ###")], {"title": PRIMARY_COLOR})
-    print("###################################")
+    welcome = """####################################################
+#                                                  #
+#       #######                                    #
+#     ##       ##                                  #
+#    ##         ##                                 #
+#    ##         ##                                 #
+#  #################                               #
+#  ##             ##                               #
+#  ##             ##                               #
+#  ##             ##  Trezor Password Manager CLI  #
+#  ##             ##                               #
+#  ##             ##                               #
+#  ###           ###                               #
+#    ###       ###                                 #
+#      #### ####                                   #
+#         ###                                      #
+#                                                  #
+####################################################"""
+    print(welcome)
 
 def goodbye():
     color_print([("class:padding", "############# "), ("class:title", "Goodbye"),("class:padding", " #############")], {"title": PRIMARY_COLOR})

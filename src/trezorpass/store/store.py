@@ -11,7 +11,7 @@ from trezorlib.transport import TransportException
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from trezorpass.utils import prompt_trezor
+from trezorpass.utils import PROMPT, prompt_trezor
 
 from ..crypto import PATH, FILENAME_MESS, decrypt
 from ..entry import Entry
@@ -71,8 +71,8 @@ class Store:
     def load(client: TrezorClient) -> Store:
         location = inquirer.select("Where is the password store located at?", choices=[
             Choice(StoreLocation.Dropbox, "Dropbox"),
-            Choice(StoreLocation.Filepath, "Filepath")
-        ]).execute()
+            Choice(StoreLocation.Filepath, "Filepath"),
+        ], qmark=PROMPT, amark=PROMPT).execute()
         if location == StoreLocation.Dropbox:
             store = Store(client, lambda store: DropboxManager(store.filename))
         elif location == StoreLocation.Filepath:
