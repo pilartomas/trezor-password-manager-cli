@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from trezorlib.misc import decrypt_keyvalue
 from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
+from trezorlib.exceptions import TrezorException, TrezorFailure
 
 from trezorpass.utils import prompt_trezor
 
@@ -29,9 +30,11 @@ class Entry:
     def emptify(value: Union[str, None]) -> str:
         return value if value else "<empty>"
 
-    @staticmethod
-    def hide(value: Union[str, None]) -> str:
-        return value if value else "<hidden>"
+    def hide(self, value: Union[str, None]) -> str:
+        if not self.decrypted:
+            return "<hidden>"
+        else:
+            return self.emptify(value)
 
     def __str__(self) -> str:
         return (
@@ -61,7 +64,12 @@ class Entry:
         key = f'Unlock {domain} for user {self.username}?'
         value = bytes.fromhex(self.nonce)
         prompt_trezor()
-        return decrypt_keyvalue(client, address_n, key, value, ask_on_encrypt=False).hex()
+        try:
+            return decrypt_keyvalue(client, address_n, key, value, ask_on_encrypt=False).hex()
+        except TrezorException:
+            raise
+        except:
+            raise TrezorFailure()
 
     def decrypt(self, client: TrezorClient):
         enc_key = self._get_entry_key(client)

@@ -7,7 +7,7 @@ from hashlib import sha256
 from trezorlib.misc import encrypt_keyvalue
 from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
-from trezorlib.transport import TransportException
+from trezorlib.exceptions import TrezorException, TrezorFailure
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
@@ -39,7 +39,12 @@ class Store:
         key = "Activate TREZOR Password Manager?"
         value = bytes.fromhex("2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee")
         prompt_trezor()
-        return encrypt_keyvalue(client, address_n, key, value).hex()
+        try:
+            return encrypt_keyvalue(client, address_n, key, value).hex()
+        except TrezorException:
+            raise
+        except:
+            raise TrezorFailure()
 
     @property
     def filename(self) -> str:

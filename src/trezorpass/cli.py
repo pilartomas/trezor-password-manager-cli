@@ -2,8 +2,7 @@ from typing import List
 
 from trezorlib.client import get_default_client, TrezorClient
 from trezorlib.transport import TransportException
-from trezorlib.exceptions import Cancelled, PinException
-from libusb1 import USBError
+from trezorlib.exceptions import Cancelled, PinException, TrezorFailure
 
 from InquirerPy import inquirer
 
@@ -85,13 +84,14 @@ def cli():
                 loop = inquirer.confirm(message="Choose another entry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
                 if not loop:
                     break
-            except USBError:
+            except TrezorFailure:
                 client = None
                 prompt_print("Connection to the Trezor device has been lost")
     except KeyboardInterrupt:
         pass
     except:
         prompt_print("Unexpected error")
+        exit(1)
     goodbye()
 
 if __name__ == "__main__":
