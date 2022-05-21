@@ -23,7 +23,7 @@ setup(
     keywords="trezor, password",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    python_requires=">=3.9, <4",
+    python_requires=">=3.7, <4",
     install_requires=["trezor", "cryptography", "inquirerpy", "dropbox", "appdirs", "libusb1"],
     entry_points={
         "console_scripts": [

@@ -1,4 +1,3 @@
-from turtle import color
 from typing import List
 
 from trezorlib.client import get_default_client, TrezorClient
@@ -14,8 +13,7 @@ from trezorpass.store.store import StoreDecodeError, StoreDecryptError
 from trezorpass.utils import PROMPT, prompt_print, welcome, goodbye
 
 def select_entry(entries: List[Entry]) -> Entry:
-    '''Lets the user select an entry'''
-
+    '''Selects an entry'''
     choices = [{"value": entry, "name":entry.note if entry.note is not None else entry.title} for entry in entries]
     selection = inquirer.fuzzy(
         message="Select an entry:",
@@ -26,20 +24,23 @@ def select_entry(entries: List[Entry]) -> Entry:
     return selection
 
 def get_client() -> TrezorClient:
-    client = None
-    while not client:
+    '''Gets the Trezor client or gracefully exits the CLI'''
+    while True:
         try:
             client = get_default_client()
             prompt_print("Device ready")
+            return client
         except TransportException as ex:
             prompt_print("No available Trezor device")
-            retry = inquirer.confirm("Retry?", long_instruction="Make sure your Trezor device is connected before proceeding", qmark=PROMPT, amark=PROMPT, default=True, mandatory=False).execute()
-            if retry is False:
-                goodbye()
-                exit(1)
-    return client
+        except:
+            prompt_print("Unable to access a Trezor device")
+        retry = inquirer.confirm("Retry?", long_instruction="Make sure your Trezor device is connected before proceeding", qmark=PROMPT, amark=PROMPT, default=True, mandatory=False).execute()
+        if retry is False:
+            goodbye()
+            exit(1)
 
-def get_store(client: TrezorClient) -> Store:
+def load_store(client: TrezorClient) -> Store:
+    '''Loads the password store or gracefully exits the CLI'''
     while True:
         try:
             return Store.load(client)
@@ -48,9 +49,11 @@ def get_store(client: TrezorClient) -> Store:
         except PinException:
             prompt_print("Invalid pin")
         except StoreDecryptError:
-            prompt_print("Unable to decrypt password store")
+            prompt_print("Unable to decrypt the password store")
         except StoreDecodeError:
-            prompt_print("Unable to decode password store")
+            prompt_print("Unable to decode the password store")
+        except:
+            prompt_print("Unable to load the password store")
         retry = inquirer.confirm("Retry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
         if retry is False:
             goodbye()
@@ -68,7 +71,7 @@ def cli():
                     store.client = client
             try:
                 if not store:
-                    store = get_store(client)
+                    store = load_store(client)
                 selected_entry = select_entry(store.entries)
                 print(selected_entry)
                 if not selected_entry.decrypted:
@@ -87,6 +90,8 @@ def cli():
                 prompt_print("Connection to the Trezor device has been lost")
     except KeyboardInterrupt:
         pass
+    except:
+        prompt_print("Unexpected error")
     goodbye()
 
 if __name__ == "__main__":
