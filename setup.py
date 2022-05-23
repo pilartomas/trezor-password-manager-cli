@@ -8,7 +8,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="trezor-pass",
-    version="0.0.5",
+    version="0.0.6",
     description="Trezor Password Manager Command-Line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
