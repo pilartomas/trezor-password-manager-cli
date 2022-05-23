@@ -61,12 +61,12 @@ class Entry:
         self._safe_note_cleartext = json.loads(decrypt(enc_key, bytes(self.safe_note["data"])).decode("utf8"))
 
     def password_cleartext(self, client: TrezorClient) -> str:
-        if not self._password_cleartext:
+        if self._password_cleartext is None:
             self.decrypt(client)
         return self._password_cleartext
 
     def safe_note_cleartext(self, client: TrezorClient) -> str:
-        if not self._safe_note_cleartext:
+        if self._safe_note_cleartext is None:
             self.decrypt(client)
         return self._safe_note_cleartext
 

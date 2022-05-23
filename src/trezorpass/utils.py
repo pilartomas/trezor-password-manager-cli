@@ -32,4 +32,4 @@ def welcome():
     print(welcome)
 
 def goodbye():
-    color_print([("class:padding", "############# "), ("class:title", "Goodbye"),("class:padding", " #############")], {"title": PRIMARY_COLOR})
+    color_print([("class:padding", "##################### "), ("class:title", "Goodbye"),("class:padding", " ######################")], {"title": PRIMARY_COLOR})
