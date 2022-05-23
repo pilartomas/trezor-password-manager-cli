@@ -6,6 +6,8 @@ from trezorlib.exceptions import Cancelled, PinException, TrezorFailure
 
 from InquirerPy import inquirer
 
+from pyperclip import copy
+
 from trezorpass.entry import Entry
 from trezorpass.store import Store
 from trezorpass.store.store import StoreDecodeError, StoreDecryptError
@@ -58,35 +60,57 @@ def load_store(client: TrezorClient) -> Store:
             goodbye()
             exit(1)
 
+def read_entry(entry: Entry, client: TrezorClient) -> None:
+    entry_prompt = PROMPT + "#" + entry.title
+    prompt_print("Press Ctrl+c to leave the entry", entry_prompt)
+    while True:
+        action = inquirer.select("Select an action:", ['Show entry', 'Copy to clipboard', 'Show entry including secrets'], qmark=entry_prompt, amark=entry_prompt).execute()
+        if action == "Show entry":
+            print(entry.show(client))
+        elif action == "Copy to clipboard":
+            key = inquirer.select("Select the value to copy:", ['username', 'password'], qmark=entry_prompt, amark=entry_prompt).execute()
+            if key == 'username':
+                copy(entry.username)
+            elif key == 'password':
+                copy(entry.password_cleartext(client))
+            prompt_print(f"{key} has been copied to the clipboard")
+        elif action == "Show entry including secrets":
+            print(entry.show(client, secrets=True))
+
 def cli():
     welcome()
     try:
         client = None
         store = None
+        entry = None
         while True:
-            if not client:
-                client = get_client()
-                if store:
-                    store.client = client
             try:
+                if not client:
+                    client = get_client()
+                    if store:
+                        store.client = client
                 if not store:
                     store = load_store(client)
-                selected_entry = select_entry(store.entries)
-                print(selected_entry)
-                if not selected_entry.decrypted:
-                    decrypt = inquirer.confirm(message="Decrypt the entry?", default=False, qmark=PROMPT, amark=PROMPT).execute()
-                    if decrypt:
-                        try:
-                            selected_entry.decrypt(client)
-                            print(selected_entry)
-                        except:
-                            prompt_print("Unable to decrypt the entry")
+                if not entry:
+                    entry = select_entry(store.entries)
+                try:
+                    read_entry(entry, client)
+                except KeyboardInterrupt:
+                    entry = None
                 loop = inquirer.confirm(message="Choose another entry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
                 if not loop:
                     break
             except TrezorFailure:
                 client = None
                 prompt_print("Connection to the Trezor device has been lost")
+            except Cancelled:
+                prompt_print("Trezor operation has been cancelled")
+            except PinException:
+                prompt_print("Invalid pin")
+            retry = inquirer.confirm("Retry?", default=True, qmark=PROMPT, amark=PROMPT).execute()
+            if retry is False:
+                goodbye()
+                exit(1)
     except KeyboardInterrupt:
         pass
     except:

@@ -22,28 +22,12 @@ class Entry:
         self.safe_note: str = None
         self.tags: List[Tag] = None
 
-        self.decrypted = False
-        self.password_cleartext: str = None
-        self.safe_note_cleartext: str = None
+        self._password_cleartext: str = None
+        self._safe_note_cleartext: str = None
 
     @staticmethod
     def emptify(value: Union[str, None]) -> str:
         return value if value else "<empty>"
-
-    def hide(self, value: Union[str, None]) -> str:
-        if not self.decrypted:
-            return "<hidden>"
-        else:
-            return self.emptify(value)
-
-    def __str__(self) -> str:
-        return (
-            f"URL: {self.emptify(self.url)}\n"
-            f"Title: {self.emptify(self.title)}\n"
-            f"Username: {self.emptify(self.username)}\n"
-            f"Password: {self.hide(self.password_cleartext)}\n"
-            f"Safe Note: {self.hide(self.safe_note_cleartext)}"
-        )
 
     @staticmethod
     def load(dict, tags: dict[str, Tag]):
@@ -73,6 +57,24 @@ class Entry:
 
     def decrypt(self, client: TrezorClient):
         enc_key = self._get_entry_key(client)
-        self.password_cleartext = json.loads(decrypt(enc_key, bytes(self.password["data"])).decode("utf8"))
-        self.safe_note_cleartext = json.loads(decrypt(enc_key, bytes(self.safe_note["data"])).decode("utf8"))
-        self.decrypted = True
+        self._password_cleartext = json.loads(decrypt(enc_key, bytes(self.password["data"])).decode("utf8"))
+        self._safe_note_cleartext = json.loads(decrypt(enc_key, bytes(self.safe_note["data"])).decode("utf8"))
+
+    def password_cleartext(self, client: TrezorClient) -> str:
+        if not self._password_cleartext:
+            self.decrypt(client)
+        return self._password_cleartext
+
+    def safe_note_cleartext(self, client: TrezorClient) -> str:
+        if not self._safe_note_cleartext:
+            self.decrypt(client)
+        return self._safe_note_cleartext
+
+    def show(self, client: TrezorClient, secrets=False) -> str:
+        return (
+            f"URL: {self.emptify(self.url)}\n"
+            f"Title: {self.emptify(self.title)}\n"
+            f"Username: {self.emptify(self.username)}\n"
+            f"Password: {self.emptify(self.password_cleartext(client)) if secrets else '<hidden>'}\n"
+            f"Safe Note: {self.emptify(self.safe_note_cleartext(client)) if secrets else '<hidden>'}"
+        )
