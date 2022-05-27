@@ -61,14 +61,14 @@ def load_store(client: TrezorClient) -> Store:
             prompt_print("Unable to load the password store")
 
 def read_entry(entry: Entry, client: TrezorClient) -> None:
-    entry_prompt = f"{PROMPT} {entry.title}"
-    prompt_print("Press Ctrl+c to leave the entry", entry_prompt)
+    entry_prompt = f"{PROMPT} |{entry.title}|"
+    long_instruction = "Press Ctrl+C to leave the entry"
     while True:
-        action = inquirer.select("Select an action:", ['Show entry', 'Copy to clipboard', 'Show entry including secrets'], qmark=entry_prompt, amark=entry_prompt).execute()
+        action = inquirer.select("Select an action:", ['Show entry', 'Copy to clipboard', 'Show entry including secrets'], qmark=entry_prompt, amark=entry_prompt, long_instruction=long_instruction).execute()
         if action == "Show entry":
             print(entry.show(client))
         elif action == "Copy to clipboard":
-            key = inquirer.select("Select the value to copy:", ['username', 'password'], qmark=entry_prompt, amark=entry_prompt).execute()
+            key = inquirer.select("Select the value to copy:", ['username', 'password'], qmark=entry_prompt, amark=entry_prompt, long_instruction=long_instruction).execute()
             if key == 'username':
                 copy(entry.username)
             elif key == 'password':

@@ -1,8 +1,18 @@
+import os
+
 from InquirerPy.utils import color_print
 
 PROMPT = "(trezor)"
 
 PRIMARY_COLOR = "#00783d"
+SECONDARY_COLOR = "#f7931a"
+
+os.environ["INQUIRERPY_STYLE_QUESTIONMARK"] = PRIMARY_COLOR
+os.environ["INQUIRERPY_STYLE_ANSWERMARK"] = PRIMARY_COLOR
+os.environ["INQUIRERPY_STYLE_ANSWER"] = SECONDARY_COLOR
+os.environ["INQUIRERPY_STYLE_INPUT"] = SECONDARY_COLOR
+os.environ["INQUIRERPY_STYLE_POINTER"] = SECONDARY_COLOR
+os.environ["INQUIRERPY_STYLE_FUZZY_PROMPT"] = PRIMARY_COLOR
 
 def prompt_print(message, prompt=PROMPT, prompt_color=PRIMARY_COLOR):
     color_print([("class:prompt", f"{prompt} "), ("class:message", message)], {"prompt": prompt_color})
