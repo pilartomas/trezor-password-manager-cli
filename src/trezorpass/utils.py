@@ -33,3 +33,14 @@ def welcome():
 
 def goodbye():
     color_print([("class:padding", "##################### "), ("class:title", "Goodbye"),("class:padding", " ######################")], {"title": PRIMARY_COLOR})
+
+def animate_dots(max_dots: int):
+    dots = 0
+    while True:
+        yield
+        if dots == max_dots:
+            print("\b \b" * dots, end="", flush=True)
+            dots = 0
+        else:
+            print(".", end="", flush=True)
+            dots += 1
