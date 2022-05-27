@@ -42,6 +42,7 @@ def get_client() -> TrezorClient:
             print()
             raise
         except:
+            print()
             prompt_print("Unable to access a Trezor device")
             raise
         time.sleep(0.7)
