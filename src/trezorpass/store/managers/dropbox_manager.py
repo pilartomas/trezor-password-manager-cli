@@ -34,8 +34,8 @@ class DropboxManager(Manager):
             prompt_print("1. Go to: " + authorize_url, DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             prompt_print("2. Click \"Allow\" (you might have to log in first).", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
             prompt_print("3. Copy the authorization code.", DROPBOX_PROMPT, DROPBOX_PRIMARY_COLOR)
+            auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute()
             try:
-                auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute()
                 oauth_result = auth_flow.finish(auth_code)
             except:
                 retry = inquirer.confirm("Invalid authorization code, retry?", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute()
@@ -56,10 +56,8 @@ class DropboxManager(Manager):
 
     @property
     def password_store(self) -> bytes:
-        if not self.oauth:
+        if not self.oauth or not inquirer.confirm("Credentials found, proceed?", default=True, qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT, style=_dropbox_style).execute():
             self.authenticate()
-        else:
-            token_found = True
 
         with dropbox.Dropbox(
             oauth2_access_token=self.oauth["access_token"],
