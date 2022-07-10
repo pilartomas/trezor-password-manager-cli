@@ -121,5 +121,8 @@ async def client_healthcheck(client: TrezorClient):
             return
         await asyncio.sleep(1)
 
-if __name__ == "__main__":
+def run_cli():
     asyncio.run(cli())
+
+if __name__ == "__main__":
+    run_cli()
