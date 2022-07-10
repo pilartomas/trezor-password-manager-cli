@@ -5,15 +5,13 @@ import os
 
 import dropbox
 import appdirs
-from InquirerPy import inquirer, get_style
+from InquirerPy import inquirer
 
 from trezorpass.store.managers.manager import Manager
-from trezorpass.utils import prompt_print
 
 DROPBOX_APP_KEY = "s340kh3l0vla1nv" # APP_KEY of the official TPM, potentionally breaking if maintainers disable PKCE flow for Dropbox auth
 APP_DIR = appdirs.user_data_dir('trezor-pass')
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
-DROPBOX_PROMPT = "(dropbox)"
 
 class DropboxManager(Manager):
     def __init__(self, filename: str):
@@ -29,14 +27,14 @@ class DropboxManager(Manager):
         while not oauth_result:
             auth_flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, use_pkce=True, token_access_type='offline')
             authorize_url = auth_flow.start()
-            prompt_print("1. Go to: " + authorize_url, DROPBOX_PROMPT)
-            prompt_print("2. Click \"Allow\" (you might have to log in first).", DROPBOX_PROMPT)
-            prompt_print("3. Copy the authorization code.", DROPBOX_PROMPT)
-            auth_code = inquirer.text("Enter the authorization code here:", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT).execute()
+            print("1. Go to: " + authorize_url)
+            print("2. Click \"Allow\" (you might have to log in first).")
+            print("3. Copy the authorization code.")
+            auth_code = inquirer.text("Enter the authorization code here:").execute()
             try:
                 oauth_result = auth_flow.finish(auth_code)
             except:
-                retry = inquirer.confirm("Invalid authorization code, retry?", qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT).execute()
+                retry = inquirer.confirm("Invalid authorization code, retry?").execute()
                 if not retry:
                     raise Exception()
         self.oauth = {
@@ -54,7 +52,7 @@ class DropboxManager(Manager):
 
     @property
     def password_store(self) -> bytes:
-        if not self.oauth or not inquirer.confirm("Credentials found, proceed?", default=True, qmark=DROPBOX_PROMPT, amark=DROPBOX_PROMPT).execute():
+        if not self.oauth or not inquirer.confirm("Credentials found, proceed?", default=True).execute():
             self.authenticate()
 
         with dropbox.Dropbox(

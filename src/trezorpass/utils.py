@@ -2,8 +2,6 @@ import os
 
 from InquirerPy.utils import color_print
 
-PROMPT = "(trezor)"
-
 PRIMARY_COLOR = "#00783d"
 SECONDARY_COLOR = "#f7931a"
 
@@ -14,14 +12,11 @@ os.environ["INQUIRERPY_STYLE_INPUT"] = SECONDARY_COLOR
 os.environ["INQUIRERPY_STYLE_POINTER"] = SECONDARY_COLOR
 os.environ["INQUIRERPY_STYLE_FUZZY_PROMPT"] = PRIMARY_COLOR
 
-def prompt_print(message, prompt=PROMPT, prompt_color=PRIMARY_COLOR):
-    color_print([("class:prompt", f"{prompt} "), ("class:message", message)], {"prompt": prompt_color})
-
 def prompt_trezor():
-    prompt_print("Proceed on your trezor device")
+    print("Proceed on your trezor device")
 
 def welcome():
-    welcome = """####################################################
+    head = """####################################################
 #                                                  #
 #       #######                                    #
 #     ##       ##                                  #
@@ -30,7 +25,9 @@ def welcome():
 #  #################                               #
 #  ##             ##                               #
 #  ##             ##                               #
-#  ##             ##  Trezor Password Manager CLI  #
+#  ##             ##  """
+    text = "Trezor Password Manager CLI"
+    tail = """  #
 #  ##             ##                               #
 #  ##             ##                               #
 #  ###           ###                               #
@@ -39,10 +36,10 @@ def welcome():
 #         ###                                      #
 #                                                  #
 ####################################################"""
-    print(welcome)
+    color_print([("class:banner", head), ("class:text", text), ("class:banner", tail)], {"banner": PRIMARY_COLOR, "text": SECONDARY_COLOR})
 
 def goodbye():
-    color_print([("class:padding", "##################### "), ("class:title", "Goodbye"),("class:padding", " ######################")], {"title": PRIMARY_COLOR})
+    color_print([("class:padding", "##################### "), ("class:title", "Goodbye"),("class:padding", " ######################")], {"padding": PRIMARY_COLOR,"title": SECONDARY_COLOR})
 
 def animate_dots(max_dots: int):
     dots = 0
