@@ -113,7 +113,7 @@ async def cli():
 async def client_healthcheck(client: TrezorClient):
     while True:
         try:
-            client.ping("healthcheck")
+            await asyncio.get_event_loop().run_in_executor(None, client.ping, "healthcheck")
         except:
             for task in asyncio.tasks.all_tasks():
                 if not task.cancelled():
