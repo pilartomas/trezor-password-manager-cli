@@ -22,7 +22,7 @@ class DropboxManager(Manager):
         except:
             self.oauth = None
 
-    def authenticate(self):
+    async def authenticate(self):
         oauth_result = None
         while not oauth_result:
             auth_flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, use_pkce=True, token_access_type='offline')
@@ -30,11 +30,11 @@ class DropboxManager(Manager):
             print("1. Go to: " + authorize_url)
             print("2. Click \"Allow\" (you might have to log in first).")
             print("3. Copy the authorization code.")
-            auth_code = inquirer.text("Enter the authorization code here:").execute()
+            auth_code = await inquirer.text("Enter the authorization code here:").execute_async()
             try:
                 oauth_result = auth_flow.finish(auth_code)
             except:
-                retry = inquirer.confirm("Invalid authorization code, retry?").execute()
+                retry = await inquirer.confirm("Invalid authorization code, retry?").execute_async()
                 if not retry:
                     raise Exception()
         self.oauth = {
@@ -51,9 +51,9 @@ class DropboxManager(Manager):
             pass
 
     @property
-    def password_store(self) -> bytes:
-        if not self.oauth or not inquirer.confirm("Credentials found, proceed?", default=True).execute():
-            self.authenticate()
+    async def password_store(self) -> bytes:
+        if not self.oauth or not await inquirer.confirm("Credentials found, proceed?", default=True).execute_async():
+            await self.authenticate()
 
         with dropbox.Dropbox(
             oauth2_access_token=self.oauth["access_token"],

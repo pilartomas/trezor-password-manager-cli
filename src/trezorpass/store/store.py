@@ -73,11 +73,11 @@ class Store:
             raise StoreDecodeError()
 
     @staticmethod
-    def load(client: TrezorClient) -> Store:
-        location = inquirer.select("Where is the password store located at?", choices=[
+    async def load(client: TrezorClient) -> Store:
+        location = await inquirer.select("Where is the password store located at?", choices=[
             Choice(StoreLocation.Dropbox, "Dropbox"),
             Choice(StoreLocation.Filepath, "Filepath"),
-        ]).execute()
+        ]).execute_async()
         if location == StoreLocation.Dropbox:
             store = Store(client, lambda store: DropboxManager(store.filename))
         elif location == StoreLocation.Filepath:
@@ -85,7 +85,7 @@ class Store:
         else:
             raise Exception("Unreachable code")
 
-        json_store = Store._decrypt_store(store._manager.password_store, store)
+        json_store = Store._decrypt_store(await store._manager.password_store, store)
         return Store._decode_store(json_store, store)
 
 class StoreDecryptError(Exception):

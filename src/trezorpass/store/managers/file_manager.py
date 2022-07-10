@@ -5,10 +5,10 @@ from .manager import Manager
 
 class FileManager(Manager):
     @property
-    def password_store(self) -> bytes:
-        filepath = inquirer.filepath(
+    async def password_store(self) -> bytes:
+        filepath = await inquirer.filepath(
             "Enter path to the password store file:",
             validate=PathValidator(is_file=True, message="Input is not a file")
-        ).execute()
+        ).execute_async()
         with open(filepath, "rb") as file:
             return file.read()
