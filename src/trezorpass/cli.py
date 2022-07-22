@@ -108,6 +108,8 @@ async def cli():
         print("Unexpected error")
         exit(1)
     finally:
+        if client:
+            client.end_session()
         goodbye()
 
 async def client_healthcheck(client: TrezorClient):
