@@ -1,16 +1,15 @@
 from typing import List
-import time
 import asyncio
 
-from trezorlib.client import get_default_client, TrezorClient
-from trezorlib.transport import TransportException
-from trezorlib.exceptions import Cancelled, PinException, TrezorFailure
+from trezorlib.client import TrezorClient
+from trezorlib.transport import TransportException, DeviceIsBusy
+from trezorlib.exceptions import Cancelled, PinException
 
 from InquirerPy import inquirer
-from InquirerPy.utils import patched_print
 
 from pyperclip import copy
 
+from trezorpass.client import get_safe_client
 from trezorpass.entry import Entry
 from trezorpass.store import Store
 from trezorpass.store.store import StoreDecodeError, StoreDecryptError
@@ -26,18 +25,20 @@ async def select_entry(entries: List[Entry], long_instruction: str) -> Entry:
     ).execute_async()
     return selection
 
+healthcheck_tasks = set()
 async def get_client() -> TrezorClient:
     '''Gets the Trezor client'''
     print("Looking for a Trezor device ", end="", flush=True)
     animation = animate_dots(5)
     while True:
         try:
-            client = get_default_client()
-            asyncio.get_event_loop().create_task(client_healthcheck(client))
+            client = get_safe_client()
+            task = asyncio.get_event_loop().create_task(client_healthcheck(client))
+            healthcheck_tasks.add(task)
             print()
             print("Trezor device ready")
             return client
-        except TransportException:
+        except (TransportException, DeviceIsBusy):
             next(animation)
         except KeyboardInterrupt:
             print()
@@ -90,6 +91,7 @@ async def cli():
     welcome()
     try:
         client = await get_client()
+
         store = await load_store(client)
         while True:
             try:
@@ -109,7 +111,10 @@ async def cli():
         exit(1)
     finally:
         if client:
-            client.end_session()
+            try:
+                client.end_session()
+            except:
+                pass
         goodbye()
 
 async def client_healthcheck(client: TrezorClient):
