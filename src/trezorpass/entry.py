@@ -25,6 +25,10 @@ class Entry:
         self._password_cleartext: str = None
         self._safe_note_cleartext: str = None
 
+    @property
+    def label(self) -> str:
+        return self.note if self.note is not None else self.title
+
     @staticmethod
     def emptify(value: Union[str, None]) -> str:
         return value if value else "<empty>"

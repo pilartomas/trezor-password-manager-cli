@@ -4,7 +4,6 @@ import json
 import os
 
 import dropbox
-import appdirs
 from InquirerPy import inquirer
 
 from trezorpass.store.managers.manager import Manager
@@ -14,8 +13,7 @@ DROPBOX_APP_KEY = "s340kh3l0vla1nv" # APP_KEY of the official TPM, potentionally
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
 
 class DropboxManager(Manager):
-    def __init__(self, filename: str):
-        self.filename = filename
+    def __init__(self):
         try:
             with open(DROPBOX_TOKEN_FILE, 'r') as file:
                 self.oauth = json.load(file)
@@ -50,8 +48,7 @@ class DropboxManager(Manager):
         except Exception as ex:
             pass
 
-    @property
-    async def password_store(self) -> bytes:
+    async def load_store(self, store_name) -> bytes:
         if not self.oauth:
             await self.authenticate()
         with dropbox.Dropbox(
@@ -60,5 +57,5 @@ class DropboxManager(Manager):
             oauth2_access_token_expiration=datetime.fromisoformat(self.oauth["expiration"]),
             app_key=DROPBOX_APP_KEY
         ) as dbx:
-            (_, response) = dbx.files_download("/" + self.filename)
+            (_, response) = dbx.files_download("/" + store_name)
             return response.content

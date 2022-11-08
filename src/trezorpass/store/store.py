@@ -8,24 +8,21 @@ from trezorlib.misc import encrypt_keyvalue
 from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
 from trezorlib.exceptions import TrezorException, TrezorFailure
-from InquirerPy import inquirer
-from InquirerPy.base.control import Choice
 
 from trezorpass.utils import prompt_trezor
 
 from ..crypto import PATH, FILENAME_MESS, decrypt
 from ..entry import Entry
-from .managers import Manager, DropboxManager, FileManager
-from .store_location import StoreLocation
+from .managers import Manager
 from ..tag import Tag
 
 class Store:
-    def __init__(self, client: TrezorClient, manager_factory: Callable[[Store], Manager]):
+    def __init__(self, client: TrezorClient, manager: Manager):
         self.client = client
         self.entries: List[Entry] = []
         self.tags: List[Tag] = []
         self._master_key = Store._get_master_key(self.client)
-        self._manager = manager_factory(self)
+        self._manager = manager
 
     @staticmethod
     def _get_master_key(client: TrezorClient) -> str:
@@ -41,7 +38,7 @@ class Store:
             raise TrezorFailure()
 
     @property
-    def filename(self) -> str:
+    def name(self) -> str:
         file_key = self._master_key[:len(self._master_key) // 2]
         return HMAC(file_key.encode(), FILENAME_MESS.encode(), sha256).hexdigest() + '.pswd'
 
@@ -67,19 +64,9 @@ class Store:
             raise StoreDecodeError()
 
     @staticmethod
-    async def load(client: TrezorClient) -> Store:
-        location = await inquirer.select("Where is the password store located at?", choices=[
-            Choice(StoreLocation.Dropbox, "Dropbox"),
-            Choice(StoreLocation.Filepath, "Filepath"),
-        ]).execute_async()
-        if location == StoreLocation.Dropbox:
-            store = Store(client, lambda store: DropboxManager(store.filename))
-        elif location == StoreLocation.Filepath:
-            store = Store(client, lambda store: FileManager())
-        else:
-            raise Exception("Unreachable code")
-
-        json_store = Store._decrypt_store(await store._manager.password_store, store)
+    async def load(client: TrezorClient, manager: Manager) -> Store:
+        store = Store(client, manager)
+        json_store = Store._decrypt_store(await store._manager.load_store(store.name), store)
         return Store._decode_store(json_store, store)
 
 class StoreDecryptError(Exception):
