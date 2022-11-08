@@ -1,6 +1,10 @@
 import os
 
+import appdirs
+
 from InquirerPy.utils import color_print
+
+APP_DIR = appdirs.user_data_dir('trezor-pass')
 
 PRIMARY_COLOR = "#00783d"
 SECONDARY_COLOR = "#f7931a"

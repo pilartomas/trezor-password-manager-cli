@@ -27,7 +27,7 @@ setup(
     install_requires=["trezor", "cryptography", "inquirerpy", "dropbox", "appdirs", "pyperclip"],
     entry_points={
         "console_scripts": [
-            "trezor-pass=trezorpass.cli:run_cli",
+            "trezor-pass=trezorpass.cli:run",
         ],
     },
     project_urls={

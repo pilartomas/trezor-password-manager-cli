@@ -24,14 +24,8 @@ class Store:
         self.client = client
         self.entries: List[Entry] = []
         self.tags: List[Tag] = []
-        self._lazy_master_key = None
+        self._master_key = Store._get_master_key(self.client)
         self._manager = manager_factory(self)
-
-    @property
-    def _master_key(self) -> str:
-        if not self._lazy_master_key:
-            self._lazy_master_key = self._get_master_key(self.client)
-        return self._lazy_master_key
 
     @staticmethod
     def _get_master_key(client: TrezorClient) -> str:

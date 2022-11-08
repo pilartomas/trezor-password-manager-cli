@@ -1,5 +1,7 @@
 from typing import List
 import asyncio
+import webbrowser
+import shutil
 
 from trezorlib.client import TrezorClient
 from trezorlib.transport import TransportException, DeviceIsBusy
@@ -13,7 +15,7 @@ from trezorpass.client import get_safe_client
 from trezorpass.entry import Entry
 from trezorpass.store import Store
 from trezorpass.store.store import StoreDecodeError, StoreDecryptError
-from trezorpass.utils import animate_dots, welcome, goodbye
+from trezorpass.utils import APP_DIR, animate_dots, welcome, goodbye
 
 async def select_entry(entries: List[Entry], long_instruction: str) -> Entry:
     '''Selects an entry'''
@@ -67,17 +69,18 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
     try:
         long_instruction = "Press Ctrl+C to leave the entry"
         while True:
-            action = await inquirer.select("Select an action:", ['Show entry', 'Copy to clipboard', 'Show entry including secrets'], long_instruction=long_instruction).execute_async()
+            action = await inquirer.select("Select an action:", ['Open the URL', 'Copy username to clipboard', 'Copy password to clipboard', 'Show entry', 'Show entry including secrets'], long_instruction=long_instruction).execute_async()
             if action == "Show entry":
                 print(entry.show(client))
-            elif action == "Copy to clipboard":
-                key = await inquirer.select("Select the value to copy:", ['username', 'password'], long_instruction=long_instruction).execute_async()
-                if key == 'username':
-                    copy(entry.username)
-                elif key == 'password':
-                    clipboard_dirty = True
-                    copy(entry.password_cleartext(client))
-                print(f"{key} has been copied to the clipboard")
+            elif action == "Copy username to clipboard":
+                copy(entry.username)
+                print("Username has been copied to the clipboard")
+            elif action == "Copy password to clipboard":
+                clipboard_dirty = True
+                copy(entry.password_cleartext(client))
+                print("Password has been copied to the clipboard")
+            elif action == "Open the URL":
+                webbrowser.open(entry.url, 2)
             elif action == "Show entry including secrets":
                 print(entry.show(client, secrets=True))
     except KeyboardInterrupt:
@@ -128,8 +131,19 @@ async def client_healthcheck(client: TrezorClient):
             return
         await asyncio.sleep(1)
 
-def run_cli():
-    asyncio.run(cli())
+def clear_data():
+    shutil.rmtree(APP_DIR, ignore_errors=True)
+
+def run():
+    import argparse
+    parser = argparse.ArgumentParser(description = 'Command line interface for interaction with trezor password store.')
+    parser.add_argument("--clear", action='store_true', help="clears saved application data")
+    args = parser.parse_args()
+    
+    if args.clear:
+        clear_data()
+    else:
+        asyncio.run(cli())
 
 if __name__ == "__main__":
-    run_cli()
+    run()

@@ -8,9 +8,9 @@ import appdirs
 from InquirerPy import inquirer
 
 from trezorpass.store.managers.manager import Manager
+from trezorpass.utils import APP_DIR
 
 DROPBOX_APP_KEY = "s340kh3l0vla1nv" # APP_KEY of the official TPM, potentionally breaking if maintainers disable PKCE flow for Dropbox auth
-APP_DIR = appdirs.user_data_dir('trezor-pass')
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
 
 class DropboxManager(Manager):
@@ -52,9 +52,8 @@ class DropboxManager(Manager):
 
     @property
     async def password_store(self) -> bytes:
-        if not self.oauth or not await inquirer.confirm("Credentials found, proceed?", default=True).execute_async():
+        if not self.oauth:
             await self.authenticate()
-
         with dropbox.Dropbox(
             oauth2_access_token=self.oauth["access_token"],
             oauth2_refresh_token=self.oauth["refresh_token"],
