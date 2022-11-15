@@ -13,7 +13,7 @@ from pyperclip import copy
 
 from trezorpass.client import get_safe_client
 from trezorpass.entry import Entry
-from trezorpass.store.managers import Manager, DropboxManager, FileManager
+from trezorpass.store.managers import Source, DropboxSource, FileSource
 from trezorpass.store import Store, StoreDecodeError, StoreDecryptError
 from trezorpass.utils import APP_DIR, animate_dots, welcome, goodbye
 
@@ -51,10 +51,12 @@ async def get_client() -> TrezorClient:
             raise
         await asyncio.sleep(0.7)
 
-async def load_store(client: TrezorClient, manager: Manager) -> Store:
+async def load_store(client: TrezorClient, manager: Source) -> Store:
     while True:
         try:
-            return await Store.load(client, manager)
+            store = Store(client, manager)
+            await store.load()
+            return store
         except StoreDecryptError:
             print("Unable to decrypt the password store")
         except StoreDecodeError:
@@ -90,7 +92,7 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
             print("Cleaning up the clipboard")
             copy("")
 
-async def cli(store_manager: Manager):
+async def cli(store_manager: Source):
     welcome()
     try:
         client = await get_client()
@@ -144,9 +146,9 @@ def run():
     if args.clear:
         clear_data()
     elif args.store:
-        asyncio.run(cli(FileManager()))
+        asyncio.run(cli(FileSource()))
     else:
-        asyncio.run(cli(DropboxManager()))
+        asyncio.run(cli(DropboxSource()))
 
 if __name__ == "__main__":
     run()

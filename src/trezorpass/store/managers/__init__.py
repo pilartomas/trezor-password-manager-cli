@@ -1,3 +1,3 @@
-from .manager import *
-from .dropbox_manager import *
-from .file_manager import *
+from .source import *
+from .dropbox_source import *
+from .file_source import *
