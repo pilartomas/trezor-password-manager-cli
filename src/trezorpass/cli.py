@@ -17,8 +17,9 @@ from trezorpass.store.managers import Source, DropboxSource, FileSource
 from trezorpass.store import Store, StoreDecodeError, StoreDecryptError
 from trezorpass.utils import APP_DIR, animate_dots, welcome, goodbye
 
+
 async def select_entry(entries: List[Entry], long_instruction: str) -> Entry:
-    '''Selects an entry'''
+    """Selects an entry"""
     choices = [{"value": entry, "name": entry.label} for entry in entries]
     selection = await inquirer.fuzzy(
         message="Select an entry:",
@@ -27,9 +28,12 @@ async def select_entry(entries: List[Entry], long_instruction: str) -> Entry:
     ).execute_async()
     return selection
 
+
 healthcheck_tasks = set()
+
+
 async def get_client() -> TrezorClient:
-    '''Gets the Trezor client'''
+    """Gets the Trezor client"""
     print("Looking for a Trezor device ", end="", flush=True)
     animation = animate_dots(5)
     while True:
@@ -51,6 +55,7 @@ async def get_client() -> TrezorClient:
             raise
         await asyncio.sleep(0.7)
 
+
 async def load_store(client: TrezorClient, manager: Source) -> Store:
     while True:
         try:
@@ -66,12 +71,16 @@ async def load_store(client: TrezorClient, manager: Source) -> Store:
         except:
             print("Unable to load the password store")
 
+
 async def manage_entry(entry: Entry, client: TrezorClient) -> None:
     clipboard_dirty = False
     try:
         long_instruction = "Press Ctrl+C to leave the entry"
         while True:
-            action = await inquirer.select("Select an action:", [f'Open {entry.url}', 'Copy username to clipboard', 'Copy password to clipboard', 'Show entry', 'Show entry including secrets'], long_instruction=long_instruction).execute_async()
+            action = await inquirer.select("Select an action:", [f'Open {entry.url}', 'Copy username to clipboard',
+                                                                 'Copy password to clipboard', 'Show entry',
+                                                                 'Show entry including secrets'],
+                                           long_instruction=long_instruction).execute_async()
             if action == "Show entry":
                 print(entry.show(client))
             elif action == f"Copy username to clipboard":
@@ -91,6 +100,7 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
         if clipboard_dirty:
             print("Cleaning up the clipboard")
             copy("")
+
 
 async def cli(store_manager: Source):
     welcome()
@@ -122,6 +132,7 @@ async def cli(store_manager: Source):
                 pass
         goodbye()
 
+
 async def client_healthcheck(client: TrezorClient):
     while True:
         try:
@@ -133,22 +144,25 @@ async def client_healthcheck(client: TrezorClient):
             return
         await asyncio.sleep(1)
 
+
 def clear_data():
     shutil.rmtree(APP_DIR, ignore_errors=True)
 
+
 def run():
     import argparse
-    parser = argparse.ArgumentParser(description = 'Command line interface for interaction with trezor password store.')
+    parser = argparse.ArgumentParser(description='Command line interface for interaction with trezor password store.')
     parser.add_argument("--clear", action='store_true', help="clears saved application data")
     parser.add_argument("--store", type=str, help="specifies the store file to be used instead of remote store")
     args = parser.parse_args()
-    
+
     if args.clear:
         clear_data()
     elif args.store:
         asyncio.run(cli(FileSource()))
     else:
         asyncio.run(cli(DropboxSource()))
+
 
 if __name__ == "__main__":
     run()

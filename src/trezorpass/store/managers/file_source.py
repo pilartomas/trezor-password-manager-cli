@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from .source import Source
+
 
 class FileSource(Source):
     def __init__(self, filename: str | None) -> None:
