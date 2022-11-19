@@ -10,6 +10,7 @@ if os.getenv("PASSPHRASE") is None:
 CIPHER_IVSIZE = 96 // 8;
 AUTH_SIZE = 128 // 8;
 
+
 def decrypt(key: str, data: bytes) -> bytes:
     iv = data[:CIPHER_IVSIZE]
     auth_tag = data[CIPHER_IVSIZE: CIPHER_IVSIZE + AUTH_SIZE]
