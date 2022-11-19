@@ -1,8 +1,13 @@
+import getpass
 import threading
+from typing import Optional, Union
 
-from trezorlib.client import TrezorClient
+from trezorlib import messages
+from trezorlib.client import TrezorClient, MAX_PIN_LENGTH
+from trezorlib.exceptions import Cancelled
+from trezorlib.messages import PinMatrixRequestType
 from trezorlib.transport import Transport, get_transport
-from trezorlib.ui import ClickUI
+from trezorlib.ui import ClickUI, PIN_MATRIX_DESCRIPTION
 
 
 class SafeTrezorClient(TrezorClient):
@@ -19,6 +24,36 @@ class SafeTrezorClient(TrezorClient):
             return super().call_raw(msg)
 
 
+class ManagerUI:
+    @staticmethod
+    def button_request(br: messages.ButtonRequest) -> None:
+        print("Please confirm action on your Trezor device.")
+
+    @staticmethod
+    def get_pin(code: Optional[PinMatrixRequestType]) -> str:
+        print(PIN_MATRIX_DESCRIPTION)
+        try:
+            pin = getpass.getpass("Please enter PIN: ")
+        except KeyboardInterrupt:
+            raise Cancelled
+
+        if all(d in "cvbdfgert" for d in pin):
+            pin = pin.translate(str.maketrans("cvbdfgert", "123456789"))
+
+        if any(d not in "123456789" for d in pin):
+            print(
+                "The value may only consist of digits 1 to 9 or letters cvbdfgert."
+            )
+        elif len(pin) > MAX_PIN_LENGTH:
+            print(f"The value must be at most {MAX_PIN_LENGTH} digits in length.")
+        else:
+            return pin
+
+    @staticmethod
+    def get_passphrase(available_on_device: bool) -> Union[str, object]:
+        return ""
+
+
 def get_safe_client():
     """Creates default thread-safe client instance
 
@@ -30,5 +65,5 @@ def get_safe_client():
         Exception: when client initialization fails
     """
     transport = get_transport()
-    ui = ClickUI()
+    ui = ManagerUI()
     return SafeTrezorClient(transport, ui)
