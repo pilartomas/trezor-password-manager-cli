@@ -13,12 +13,8 @@ os.environ["INQUIRERPY_STYLE_POINTER"] = SECONDARY_COLOR
 os.environ["INQUIRERPY_STYLE_FUZZY_PROMPT"] = PRIMARY_COLOR
 
 
-def prompt_trezor():
-    print("Proceed on your trezor device")
-
-
 def welcome():
-    head = """####################################################
+    banner = """####################################################
 #                                                  #
 #       #######                                    #
 #     ##       ##                                  #
@@ -27,9 +23,7 @@ def welcome():
 #  #################                               #
 #  ##             ##                               #
 #  ##             ##                               #
-#  ##             ##  """
-    text = "Trezor Password Manager CLI"
-    tail = """  #
+#  ##             ##  Trezor Password Manager CLI  #
 #  ##             ##                               #
 #  ##             ##                               #
 #  ###           ###                               #
@@ -38,13 +32,48 @@ def welcome():
 #         ###                                      #
 #                                                  #
 ####################################################"""
-    color_print([("class:banner", head), ("class:text", text), ("class:banner", tail)],
-                {"banner": PRIMARY_COLOR, "text": SECONDARY_COLOR})
+    color_print(prepare_graphics(banner), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
 
 
 def goodbye():
-    color_print([("class:padding", "##################### "), ("class:title", "Goodbye"),
-                 ("class:padding", " ######################")], {"padding": PRIMARY_COLOR, "title": SECONDARY_COLOR})
+    message = """##################### Goodbye ######################"""
+    color_print(prepare_graphics(message), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
+
+
+def pin_guide():
+    guide = """      #######                #######       
+    ##       ##            ##       ##   
+   ##         ##          ##         ##  
+   ##         ##          ##         ##  
+ #################      #################
+ ##  Input PIN  ##      ##  Input PIN  ## 
+ ##             ##      ##             ##
+ ##    7 8 9    ##      ##    e r t    ##
+ ##    4 5 6    ##  or  ##    d f g    ##
+ ##    1 2 3    ##      ##    c v b    ##
+ ###           ###      ###           ###
+   ###       ###          ###       ###  
+     #### ####              #### ####    
+        ###                    ###       """
+    color_print(prepare_graphics(guide), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
+
+
+def confirm_guide():
+    guide = """      #######     
+    ##       ##   
+   ##         ##  
+   ##         ##  
+ #################
+ ##             ##
+ ##   Confirm   ##
+ ##             ##
+ ##             ##
+ ##  No    Yes  ##
+ ###           ###
+   ###       ###  
+     #### ####    
+        ###       """
+    color_print(prepare_graphics(guide), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
 
 
 def animate_dots(max_dots: int):
@@ -57,3 +86,27 @@ def animate_dots(max_dots: int):
         else:
             print(".", end="", flush=True)
             dots += 1
+
+
+def prepare_graphics(graphics: str,
+                     graphics_class: str = "graphics",
+                     text_class: str = "text",
+                     graphics_character: str = "#"):
+    result = []
+    buffer = ""
+    is_graphics = True
+    for c in graphics:
+        if c.isspace():
+            buffer += c
+        elif is_graphics and c != graphics_character:
+            result.append((f"class:{graphics_class}", buffer))
+            is_graphics = False
+            buffer = c
+        elif not is_graphics and c == graphics_character:
+            result.append((f"class:{text_class}", buffer))
+            is_graphics = True
+            buffer = c
+        else:
+            buffer += c
+    result.append((f"class:{graphics_class if is_graphics else text_class}", buffer))
+    return result

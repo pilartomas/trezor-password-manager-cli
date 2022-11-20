@@ -9,8 +9,6 @@ from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
 from trezorlib.exceptions import TrezorException, TrezorFailure
 
-from trezorpass.utils import prompt_trezor
-
 from ..crypto import PATH, FILENAME_MESS, decrypt
 from ..entry import Entry
 from .managers import Source
@@ -36,7 +34,6 @@ class Store:
         address_n = parse_path(PATH)
         key = "Activate TREZOR Password Manager?"
         value = bytes.fromhex("2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee2d650551248d792eabf628f451200d7f51cb63e46aadcbb1038aacb05e8c8aee")
-        prompt_trezor()
         try:
             return encrypt_keyvalue(client, address_n, key, value).hex()
         except TrezorException:

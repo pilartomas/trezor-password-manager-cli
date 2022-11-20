@@ -9,6 +9,8 @@ from trezorlib.messages import PinMatrixRequestType
 from trezorlib.transport import Transport, get_transport
 from trezorlib.ui import ClickUI, PIN_MATRIX_DESCRIPTION
 
+from trezorpass.utils import pin_guide, confirm_guide
+
 
 class SafeTrezorClient(TrezorClient):
     def __init__(self, transport: Transport, ui: ClickUI, **kwargs):
@@ -27,11 +29,11 @@ class SafeTrezorClient(TrezorClient):
 class ManagerUI:
     @staticmethod
     def button_request(br: messages.ButtonRequest) -> None:
-        print("Please confirm action on your Trezor device.")
+        confirm_guide()
 
     @staticmethod
     def get_pin(code: Optional[PinMatrixRequestType]) -> str:
-        print(PIN_MATRIX_DESCRIPTION)
+        pin_guide()
         try:
             pin = getpass.getpass("Please enter PIN: ")
         except KeyboardInterrupt:

@@ -7,8 +7,6 @@ from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
 from trezorlib.exceptions import TrezorException, TrezorFailure
 
-from trezorpass.utils import prompt_trezor
-
 from .crypto import PATH, decrypt
 from .tag import Tag
 
@@ -51,7 +49,6 @@ class Entry:
             domain = self.url
         key = f'Unlock {domain} for user {self.username}?'
         value = bytes.fromhex(self.nonce)
-        prompt_trezor()
         try:
             return decrypt_keyvalue(client, address_n, key, value, ask_on_encrypt=False).hex()
         except TrezorException:
