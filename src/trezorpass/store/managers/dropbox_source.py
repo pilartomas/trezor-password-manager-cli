@@ -9,7 +9,7 @@ from InquirerPy import inquirer
 from trezorpass.store.managers.source import Source, SourceError
 from trezorpass.appdata import APP_DIR
 
-DROPBOX_APP_KEY = "s340kh3l0vla1nv"  # APP_KEY of the official TPM, potentionally breaking if maintainers disable
+DROPBOX_APP_KEY = "s340kh3l0vla1nv"  # APP_KEY of the official TPM, potentially breaking if maintainers disable
 # PKCE flow for Dropbox auth
 DROPBOX_TOKEN_FILE = os.path.join(APP_DIR, 'dropbox')
 

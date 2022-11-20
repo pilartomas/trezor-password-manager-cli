@@ -9,7 +9,7 @@ from trezorlib.messages import PinMatrixRequestType
 from trezorlib.transport import Transport, get_transport
 from trezorlib.ui import ClickUI, PIN_MATRIX_DESCRIPTION
 
-from trezorpass.utils import pin_guide, confirm_guide
+from trezorpass.utils import pin_guide, confirm_guide, prompt_print
 
 
 class SafeTrezorClient(TrezorClient):
@@ -35,6 +35,7 @@ class ManagerUI:
     def get_pin(code: Optional[PinMatrixRequestType]) -> str:
         pin_guide()
         try:
+            prompt_print("", end="")
             pin = getpass.getpass("Please enter PIN: ")
         except KeyboardInterrupt:
             raise Cancelled
@@ -43,11 +44,13 @@ class ManagerUI:
             pin = pin.translate(str.maketrans("cvbdfgert", "123456789"))
 
         if any(d not in "123456789" for d in pin):
-            print(
+            prompt_print(
                 "The value may only consist of digits 1 to 9 or letters cvbdfgert."
             )
+            raise Cancelled
         elif len(pin) > MAX_PIN_LENGTH:
-            print(f"The value must be at most {MAX_PIN_LENGTH} digits in length.")
+            prompt_print(f"The value must be at most {MAX_PIN_LENGTH} digits in length.")
+            raise Cancelled
         else:
             return pin
 

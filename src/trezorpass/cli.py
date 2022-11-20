@@ -13,7 +13,7 @@ from trezorpass.client import get_safe_client
 from trezorpass.entry import Entry
 from trezorpass.store.managers import Source, DropboxSource, FileSource
 from trezorpass.store import Store
-from trezorpass.utils import animate_dots, welcome, goodbye
+from trezorpass.utils import animate_dots, welcome, goodbye, prompt_print
 from trezorpass.appdata import clear_data
 
 
@@ -48,7 +48,7 @@ async def get_client() -> TrezorClient:
         KeyboardInterrupt
         Exception: Client initialization failure
     """
-    print("Looking for a Trezor device ", end="", flush=True)
+    prompt_print("Looking for a Trezor device ", end="", flush=True)
     animation = animate_dots(5)
     while True:
         try:
@@ -56,7 +56,6 @@ async def get_client() -> TrezorClient:
             task = asyncio.get_event_loop().create_task(client_healthcheck(client))
             healthcheck_tasks.add(task)
             print()
-            print("Trezor device ready")
             return client
         except TransportException:
             next(animation)  # Keep waiting
@@ -103,11 +102,11 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
                 webbrowser.open(entry.url, 2)
             elif action == choices[1]:
                 copy(entry.username)
-                print("Username has been copied to the clipboard")
+                prompt_print("Username has been copied to the clipboard")
             elif action == choices[2]:
                 clipboard_dirty = True
                 copy(entry.password_cleartext(client))
-                print("Password has been copied to the clipboard")
+                prompt_print("Password has been copied to the clipboard")
             elif action == choices[3]:
                 print(entry.show(client))
             elif action == choices[4]:
@@ -116,7 +115,7 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
         pass
     finally:
         if clipboard_dirty:
-            print("Cleaning up the clipboard")
+            prompt_print("Cleaning up the clipboard")
             copy("")
 
 
@@ -175,7 +174,7 @@ def run():
     elif args.store:
         asyncio.run(cli(FileSource(args.store)))
     else:
-        asyncio.run(cli(DropboxSource()))
+        asyncio.run(cli(DropboxSource()), debug=True if args.debug else False)
 
 
 if __name__ == "__main__":
