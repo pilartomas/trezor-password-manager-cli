@@ -1,5 +1,7 @@
 # Trezor Password Manager CLI
 
+[![asciicast](https://asciinema.org/a/544620.svg)](https://asciinema.org/a/544620)
+
 Command-line alternative to the [Trezor Password Manager](https://trezor.io/passwords/) project. This project is aiming for compatibility in password store encryption, encoding and structure. Users will be able to read and write to the same password store regardless of which project they use.
 
 ### Run
