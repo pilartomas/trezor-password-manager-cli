@@ -22,6 +22,17 @@ def prompt_print(message: str, **kwargs):
     )
 
 
+def prompt_print_pairs(pairs: list[tuple[str, str]]):
+    color_print([(SECONDARY_COLOR, "#")])
+    for (name, value) in pairs:
+        color_print([
+            (PRIMARY_COLOR, "# "),
+            ("class:name", f"{name}: "),
+            (SECONDARY_COLOR, value if value else "<empty>")
+        ])
+    color_print([(SECONDARY_COLOR, "#")])
+
+
 def welcome():
     banner = """####################################################
 #                                                  #
@@ -50,38 +61,42 @@ def goodbye():
 
 
 def pin_guide():
-    guide = """      #######                #######       
-    ##       ##            ##       ##   
-   ##         ##          ##         ##  
-   ##         ##          ##         ##  
- #################      #################
- ##  Input PIN  ##      ##  Input PIN  ## 
- ##             ##      ##             ##
- ##    7 8 9    ##      ##    e r t    ##
- ##    4 5 6    ##  or  ##    d f g    ##
- ##    1 2 3    ##      ##    c v b    ##
- ###           ###      ###           ###
-   ###       ###          ###       ###  
-     #### ####              #### ####    
-        ###                    ###       """
+    guide = """#
+#       #######                #######       
+#     ##       ##            ##       ##   
+#    ##         ##          ##         ##  
+#    ##         ##          ##         ##  
+#  #################      #################
+#  ##  Input PIN  ##      ##  Input PIN  ## 
+#  ##             ##      ##             ##
+#  ##    7 8 9    ##      ##    e r t    ##
+#  ##    4 5 6    ##  or  ##    d f g    ##
+#  ##    1 2 3    ##      ##    c v b    ##
+#  ###           ###      ###           ###
+#    ###       ###          ###       ###  
+#      #### ####              #### ####    
+#         ###                    ###
+#"""
     color_print(prepare_graphics(guide), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
 
 
 def confirm_guide():
-    guide = """      #######     
-    ##       ##   
-   ##         ##  
-   ##         ##  
- #################
- ##             ##
- ##   Confirm   ##
- ##             ##
- ##             ##
- ##  No    Yes  ##
- ###           ###
-   ###       ###  
-     #### ####    
-        ###       """
+    guide = """#
+#       #######     
+#     ##       ##   
+#    ##         ##  
+#    ##         ##  
+#  #################
+#  ##             ##
+#  ##   Confirm   ##
+#  ##             ##
+#  ##             ##
+#  ##  No    Yes  ##
+#  ###           ###
+#    ###       ###  
+#      #### ####    
+#         ###
+#"""
     color_print(prepare_graphics(guide), {"graphics": PRIMARY_COLOR, "text": SECONDARY_COLOR})
 
 

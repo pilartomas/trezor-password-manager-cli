@@ -7,7 +7,7 @@ from InquirerPy import inquirer
 from pyperclip import copy
 
 from ..store import Entry
-from ..utils import prompt_print
+from ..utils import prompt_print, prompt_print_pairs
 
 
 async def select_entry(entries: List[Entry]) -> Entry:
@@ -33,9 +33,13 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
     clipboard_dirty = False
     try:
         while True:
-            choices = [f'Open {entry.url}', 'Copy username to clipboard',
-                    'Copy password to clipboard', 'Show entry',
-                    'Show entry including secrets']
+            choices = [
+                f'Open {entry.url}',
+                'Copy username to clipboard',
+                'Copy password to clipboard',
+                'Show entry',
+                'Show entry including secrets'
+            ]
             action = await inquirer.select(
                 "Select an action:",
                 choices=choices,
@@ -52,9 +56,19 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
                     clipboard_dirty = True
                     prompt_print("Password has been copied to the clipboard")
                 elif action == choices[3]:
-                    print(entry.show(client))
+                    prompt_print_pairs([
+                        ("URL", entry.url),
+                        ("Title", entry.title),
+                        ("Username", entry.username)
+                    ])
                 elif action == choices[4]:
-                    print(entry.show(client, secrets=True))
+                    prompt_print_pairs([
+                        ("URL", entry.url),
+                        ("Title", entry.title),
+                        ("Username", entry.username),
+                        ("Password", entry.password_cleartext(client)),
+                        ("Safe Note", entry.safe_note_cleartext(client))
+                    ])
             except Cancelled:
                 prompt_print("Action has been cancelled")
     except KeyboardInterrupt:

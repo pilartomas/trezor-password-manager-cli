@@ -10,6 +10,7 @@ from trezorlib.exceptions import TrezorException, TrezorFailure
 from ..crypto import PATH, decrypt
 from .tag import Tag
 
+
 class Entry:
     def __init__(self, url: str) -> None:
         self.url = url
@@ -70,12 +71,3 @@ class Entry:
         if self._safe_note_cleartext is None:
             self.decrypt(client)
         return self._safe_note_cleartext
-
-    def show(self, client: TrezorClient, secrets=False) -> str:
-        return (
-            f"URL: {self.emptify(self.url)}\n"
-            f"Title: {self.emptify(self.title)}\n"
-            f"Username: {self.emptify(self.username)}\n"
-            f"Password: {self.emptify(self.password_cleartext(client)) if secrets else '<hidden>'}\n"
-            f"Safe Note: {self.emptify(self.safe_note_cleartext(client)) if secrets else '<hidden>'}"
-        )
