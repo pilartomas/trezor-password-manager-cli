@@ -24,12 +24,15 @@ def get_safe_client():
 class SafeTrezorClient(TrezorClient):
     def __init__(self, transport: Transport, ui: ManagerUI, **kwargs):
         self._lock = threading.Lock()
-        super().__init__(transport, ui, **kwargs)
-
-    def open(self):
-        with self._lock:
-            return super().open()
+        super().__init__(transport, ui, _init_device=False, **kwargs)
 
     def call_raw(self, msg):
         with self._lock:
             return super().call_raw(msg)
+
+    def __enter__(self):
+        self.init_device()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.end_session()
