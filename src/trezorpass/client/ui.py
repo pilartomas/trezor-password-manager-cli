@@ -1,29 +1,12 @@
 import getpass
-import threading
 from typing import Optional, Union
 
 from trezorlib import messages
-from trezorlib.client import TrezorClient, MAX_PIN_LENGTH
 from trezorlib.exceptions import Cancelled
 from trezorlib.messages import PinMatrixRequestType
-from trezorlib.transport import Transport, get_transport
-from trezorlib.ui import ClickUI, PIN_MATRIX_DESCRIPTION
+from trezorlib.client import MAX_PIN_LENGTH
 
 from trezorpass.utils import pin_guide, confirm_guide, prompt_print
-
-
-class SafeTrezorClient(TrezorClient):
-    def __init__(self, transport: Transport, ui: ClickUI, **kwargs):
-        self._lock = threading.Lock()
-        super().__init__(transport, ui, **kwargs)
-
-    def open(self):
-        with self._lock:
-            return super().open()
-
-    def call_raw(self, msg):
-        with self._lock:
-            return super().call_raw(msg)
 
 
 class ManagerUI:
@@ -57,18 +40,3 @@ class ManagerUI:
     @staticmethod
     def get_passphrase(available_on_device: bool) -> Union[str, object]:
         return ""
-
-
-def get_safe_client():
-    """Creates default thread-safe client instance
-
-    Returns:
-        Instance of the thread-safe Trezor client
-
-    Raises:
-        TransportException: when client cannot be found
-        Exception: when client initialization fails
-    """
-    transport = get_transport()
-    ui = ManagerUI()
-    return SafeTrezorClient(transport, ui)

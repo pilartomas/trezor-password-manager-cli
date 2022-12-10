@@ -7,6 +7,13 @@ AUTH_SIZE = 128 // 8;
 
 
 def decrypt(key: str, data: bytes) -> bytes:
+    """Decrypts data using AES-GCM.
+    Used for decrypting the store and entry secrets.
+
+    Args:
+        key: Key for the data acquired from Trezor device
+        data: Binary data containing the (iv + ciphertext + authtag)
+    """
     iv = data[:CIPHER_IVSIZE]
     auth_tag = data[CIPHER_IVSIZE: CIPHER_IVSIZE + AUTH_SIZE]
     ciphertext = data[CIPHER_IVSIZE + AUTH_SIZE:]

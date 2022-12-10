@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import List, Tuple
 import json
 from hmac import HMAC
@@ -10,9 +9,9 @@ from trezorlib.client import TrezorClient
 from trezorlib.exceptions import TrezorException, TrezorFailure
 
 from ..crypto import PATH, FILENAME_MESS, decrypt
-from ..entry import Entry
-from .managers import Source
-from ..tag import Tag
+from .entry import Entry
+from .sources import Source
+from .tag import Tag
 
 class Store:
     def __init__(self, client: TrezorClient, manager: Source):
