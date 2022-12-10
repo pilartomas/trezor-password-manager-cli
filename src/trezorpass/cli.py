@@ -1,29 +1,29 @@
 import asyncio
 import logging
 
-from trezorlib.exceptions import Cancelled, PinException
+from trezorlib.exceptions import PinException
 
+from .store import StoreLoadError, StoreDecryptError, StoreDecodeError, Store
 from .store.sources import Source, DropboxSource, FileSource
-from .utils import welcome, goodbye
+from .utils import prompt_print, welcome, goodbye
 from .appdata import clear_data
-from .helpers import get_client, load_store, select_entry, manage_entry
+from .helpers import get_client, select_entry, manage_entry
 
 
-async def cli(store_manager: Source):
+async def cli(store_source: Source):
     welcome()
     try:
         with await get_client() as client:
-            store = await load_store(client, store_manager)
-            while True:
-                try:
+            async with Store(client, store_source) as store:
+                while True:
                     entry = await select_entry(store.entries)
                     await manage_entry(entry, client)
-                except Cancelled:
-                    print("Trezor operation has been cancelled")
-                except PinException:
-                    print("Invalid pin")
     except KeyboardInterrupt:
         pass
+    except PinException:
+        prompt_print("Trezor pin was not valid")
+    except (StoreLoadError, StoreDecryptError, StoreDecodeError):
+        prompt_print("Failed to load the password store")
     except Exception:
         logging.exception("CLI failed")
     finally:
