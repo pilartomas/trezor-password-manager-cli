@@ -20,12 +20,14 @@ async def cli(store_source: Source):
                     await manage_entry(entry, client)
     except KeyboardInterrupt:
         pass
+    except asyncio.CancelledError:
+        pass
     except PinException:
         prompt_print("Trezor pin was not valid")
     except (StoreLoadError, StoreDecryptError, StoreDecodeError):
         prompt_print("Failed to load the password store")
-    except Exception:
-        logging.exception("CLI failed")
+    except BaseException as e:
+        logging.exception("CLI failed", exc_info=e)
     finally:
         goodbye()
 
