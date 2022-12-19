@@ -7,8 +7,8 @@ from trezorlib.tools import parse_path
 from trezorlib.client import TrezorClient
 from trezorlib.exceptions import TrezorException, TrezorFailure
 
-from ..crypto import PATH, decrypt
-from .tag import Tag
+from trezorpass.crypto import PATH, decrypt
+from trezorpass.store.tag import Tag
 
 
 class Entry:

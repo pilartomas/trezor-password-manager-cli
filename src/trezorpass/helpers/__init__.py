@@ -1,2 +1,2 @@
-from .client import *
-from .entry import *
+from trezorpass.helpers.client import *
+from trezorpass.helpers.entry import *

@@ -6,8 +6,8 @@ from trezorlib.exceptions import Cancelled
 from InquirerPy import inquirer
 from pyperclip import copy
 
-from ..store import Entry
-from ..utils import prompt_print, prompt_print_pairs
+from trezorpass.store import Entry
+from trezorpass.utils import prompt_print, prompt_print_pairs
 
 
 async def select_entry(entries: List[Entry]) -> Entry:

@@ -1,1 +1,1 @@
-from .client import *
+from trezorpass.client.client import *

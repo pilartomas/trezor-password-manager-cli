@@ -5,7 +5,7 @@ import logging
 from trezorlib.client import TrezorClient
 from trezorlib.transport import Transport, get_transport
 
-from .ui import ManagerUI
+from trezorpass.client.ui import ManagerUI
 
 
 def get_default_client():

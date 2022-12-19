@@ -3,8 +3,8 @@ import asyncio
 from trezorlib.client import TrezorClient
 from trezorlib.transport import TransportException
 
-from ..client import get_default_client
-from ..utils import animate_dots, prompt_print
+from trezorpass.client import get_default_client
+from trezorpass.utils import animate_dots, prompt_print
 
 
 async def get_client() -> TrezorClient:
