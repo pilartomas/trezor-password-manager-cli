@@ -37,11 +37,6 @@ class StoreLoader:
         (tags, entries) = self._decode_store(encoded_store)
         return Store(name, entries, tags)
 
-    @staticmethod
-    def name(master_key: str) -> str:
-        file_key = master_key[:len(master_key) // 2]
-        return HMAC(file_key.encode(), FILENAME_MESS.encode(), sha256).hexdigest() + '.pswd'
-
     async def _load_encrypted_store(self, name: str) -> bytes:
         try:
             return await self.source.load_store(name)
