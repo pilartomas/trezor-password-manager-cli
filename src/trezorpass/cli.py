@@ -3,18 +3,18 @@ import logging
 
 from trezorlib.exceptions import PinException
 
-from .store import StoreLoadError, StoreDecryptError, StoreDecodeError, Store
-from .store.sources import Source, DropboxSource, FileSource
-from .utils import prompt_print, welcome, goodbye
-from .appdata import clear_data
-from .helpers import get_client, select_entry, manage_entry
+from trezorpass.store import StoreLoadError, StoreDecryptError, StoreDecodeError, get_store_manager
+from trezorpass.store.sources import Source, DropboxSource, FileSource
+from trezorpass.utils import prompt_print, welcome, goodbye
+from trezorpass.appdata import clear_data
+from trezorpass.helpers import get_client, select_entry, manage_entry
 
 
 async def cli(store_source: Source):
     welcome()
     try:
         with await get_client() as client:
-            async with Store(client, store_source) as store:
+            async with get_store_manager(client, store_source) as store:
                 while True:
                     entry = await select_entry(store.entries)
                     await manage_entry(entry, client)
