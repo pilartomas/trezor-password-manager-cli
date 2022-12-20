@@ -1,12 +1,11 @@
 from typing import List
 import webbrowser
 
-from trezorlib.client import TrezorClient
 from trezorlib.exceptions import Cancelled
 from InquirerPy import inquirer
 from pyperclip import copy
 
-from trezorpass.store import Entry
+from trezorpass.store import Entry, EncryptedEntry, EntryDecrypter
 from trezorpass.utils import prompt_print, prompt_print_pairs
 
 
@@ -28,7 +27,7 @@ async def select_entry(entries: List[Entry]) -> Entry:
     return selection
 
 
-async def manage_entry(entry: Entry, client: TrezorClient) -> None:
+async def manage_entry(entry: EncryptedEntry, decrypter: EntryDecrypter) -> None:
     """Facilitates interaction with the given entry"""
     clipboard_dirty = False
     try:
@@ -52,7 +51,8 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
                     copy(entry.username)
                     prompt_print("Username has been copied to the clipboard")
                 elif action == choices[2]:
-                    copy(entry.password_cleartext(client))
+                    decrypted_entry = decrypter(entry)
+                    copy(decrypted_entry.password)
                     clipboard_dirty = True
                     prompt_print("Password has been copied to the clipboard")
                 elif action == choices[3]:
@@ -62,12 +62,13 @@ async def manage_entry(entry: Entry, client: TrezorClient) -> None:
                         ("Username", entry.username)
                     ])
                 elif action == choices[4]:
+                    decrypted_entry = decrypter(entry)
                     prompt_print_pairs([
-                        ("URL", entry.url),
-                        ("Title", entry.title),
-                        ("Username", entry.username),
-                        ("Password", entry.password_cleartext(client)),
-                        ("Safe Note", entry.safe_note_cleartext(client))
+                        ("URL", decrypted_entry.url),
+                        ("Title", decrypted_entry.title),
+                        ("Username", decrypted_entry.username),
+                        ("Password", decrypted_entry.password),
+                        ("Safe Note", decrypted_entry.safe_note)
                     ])
             except Cancelled:
                 prompt_print("Action has been cancelled")

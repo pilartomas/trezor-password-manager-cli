@@ -1,11 +1,8 @@
-class Tag:
-    def __init__(self, title: str) -> None:
-        self.title = title
+from trezorpass.store.containers import Tag
 
-    @staticmethod
-    def load(dict):
-        tag = Tag(dict["title"])
-        return tag
 
-    def __str__(self) -> str:
-        return self.title
+class TagDecoder:
+    def decode(self, tag_dict) -> Tag:
+        return Tag(
+            title=tag_dict["title"]
+        )

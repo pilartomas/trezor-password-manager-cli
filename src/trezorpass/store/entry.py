@@ -1,73 +1,65 @@
 import json
-from typing import List, Union
-from urllib.parse import urlparse
+from typing import List
 
-from trezorlib.misc import decrypt_keyvalue
-from trezorlib.tools import parse_path
-from trezorlib.client import TrezorClient
-from trezorlib.exceptions import TrezorException, TrezorFailure
-
-from trezorpass.crypto import PATH, decrypt
+from trezorpass.crypto import decrypt
+from trezorpass.store.keychain import Keychain
 from trezorpass.store.tag import Tag
 
 
 class Entry:
-    def __init__(self, url: str) -> None:
+    def __init__(self, *, url: str, title: str, username: str, nonce: str, tags: List[Tag]):
         self.url = url
-        self.title: str = None
-        self.username: str = None
-        self.nonce: str = None
-        self.password: str = None
-        self.safe_note: str = None
-        self.tags: List[Tag] = None
-
-        self._password_cleartext: str = None
-        self._safe_note_cleartext: str = None
+        self.title = title
+        self.username = username
+        self.nonce = nonce
+        self.tags: List[Tag] = tags
 
     @property
     def label(self) -> str:
         return self.note if self.note is not None else self.title
 
-    @staticmethod
-    def emptify(value: Union[str, None]) -> str:
-        return value if value else "<empty>"
 
-    @staticmethod
-    def load(dict, tags: dict[str, Tag]):
-        entry = Entry(dict["title"]) # title field in JSON is actually the url
-        entry.__dict__.update(dict)
-        entry.title = dict["note"] # and note field is the title
-        entry.tags = [tags[key] for key in dict["tags"]]
-        return entry
+class EncryptedEntry(Entry):
+    def __init__(self, *, encrypted_password: str, encrypted_safe_note: str, **kwargs):
+        super().__init__(**kwargs)
+        self.encrypted_password = encrypted_password
+        self.encrypted_safe_note = encrypted_safe_note
 
-    def _get_entry_key(self, client: TrezorClient):
-        address_n = parse_path(PATH)
 
-        url = urlparse(self.url)
-        if url.scheme in ('ftp', 'http', 'https'):
-            domain = url.netloc
-        else:
-            domain = self.url
-        key = f'Unlock {domain} for user {self.username}?'
-        value = bytes.fromhex(self.nonce)
-        try:
-            return decrypt_keyvalue(client, address_n, key, value, ask_on_encrypt=False).hex()
-        except TrezorException:
-            raise
-        except:
-            raise TrezorFailure()
+class DecryptedEntry(Entry):
+    def __init__(self, *, password: str, safe_note: str, **kwargs):
+        super().__init__(**kwargs)
+        self.password = password
+        self.safe_note = safe_note
 
-    def decrypt(self, client: TrezorClient):
-        enc_key = self._get_entry_key(client)
-        self._password_cleartext = json.loads(decrypt(enc_key, bytes(self.password["data"])).decode("utf8"))
-        self._safe_note_cleartext = json.loads(decrypt(enc_key, bytes(self.safe_note["data"])).decode("utf8"))
 
-    def password_cleartext(self, client: TrezorClient) -> str:
-        if self._password_cleartext is None:
-            self.decrypt(client)
-        return self._password_cleartext
+class EntryDecoder:
+    def decode(self, entry_dict) -> EncryptedEntry:
+        return EncryptedEntry(
+            url=entry_dict["title"],  # Intended
+            title=entry_dict["note"],  # Intended
+            username=entry_dict["username"],
+            nonce=entry_dict["nonce"],
+            encrypted_password=entry_dict["password"]["data"],
+            encrypted_safe_note=entry_dict["password"]["data"],
+            tags=[]
+        )
 
-    def safe_note_cleartext(self, client: TrezorClient) -> str:
-        if self._safe_note_cleartext is None:
-            self.decrypt(client)
-        return self._safe_note_cleartext
+
+class EntryDecrypter:
+    def __init__(self, keychain: Keychain):
+        self.keychain = keychain
+
+    def decrypt(self, entry: EncryptedEntry) -> DecryptedEntry:
+        key = self.keychain(entry)
+        password = json.loads(decrypt(key, bytes(entry.encrypted_password)).decode("utf8"))
+        secret_note = json.loads(decrypt(key, bytes(entry.encrypted_safe_note)).decode("utf8"))
+        return DecryptedEntry(
+            url=entry.url,
+            title=entry.title,
+            username=entry.username,
+            nonce=entry.nonce,
+            tags=entry.tags,
+            password=password,
+            secret_note=secret_note
+        )
