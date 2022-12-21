@@ -43,7 +43,11 @@ class StoreDecoder:
             entries_dict = store_dict['entries']
             tags = [self.tag_decoder.decode(tags_dict[key]) for key in tags_dict]
             entries = [self.entry_decoder.decode(entries_dict[key]) for key in entries_dict]
-            return Store(self.keychain.store_name, entries, tags)
+            return Store(
+                name=self.keychain.store_name,
+                entries=entries,
+                tags=tags
+            )
         except Exception as e:
             raise StoreDecodeError() from e
 

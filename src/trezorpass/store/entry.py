@@ -1,36 +1,8 @@
 import json
-from typing import List
 
 from trezorpass.crypto import decrypt
+from trezorpass.store.containers import EncryptedEntry, DecryptedEntry
 from trezorpass.store.keychain import Keychain
-from trezorpass.store.tag import Tag
-
-
-class Entry:
-    def __init__(self, *, url: str, title: str, username: str, nonce: str, tags: List[Tag]):
-        self.url = url
-        self.title = title
-        self.username = username
-        self.nonce = nonce
-        self.tags: List[Tag] = tags
-
-    @property
-    def label(self) -> str:
-        return self.note if self.note is not None else self.title
-
-
-class EncryptedEntry(Entry):
-    def __init__(self, *, encrypted_password: str, encrypted_safe_note: str, **kwargs):
-        super().__init__(**kwargs)
-        self.encrypted_password = encrypted_password
-        self.encrypted_safe_note = encrypted_safe_note
-
-
-class DecryptedEntry(Entry):
-    def __init__(self, *, password: str, safe_note: str, **kwargs):
-        super().__init__(**kwargs)
-        self.password = password
-        self.safe_note = safe_note
 
 
 class EntryDecoder:
