@@ -18,7 +18,7 @@ async def select_entry(entries: List[Entry]) -> Entry:
     Raises:
         KeyboardInterrupt
     """
-    choices = [{"value": entry, "name": entry.label} for entry in entries]
+    choices = [{"value": entry, "name": entry.title} for entry in entries]
     selection = await inquirer.fuzzy(
         message="Select an entry:",
         choices=choices,
@@ -51,7 +51,7 @@ async def manage_entry(entry: EncryptedEntry, decrypter: EntryDecrypter) -> None
                     copy(entry.username)
                     prompt_print("Username has been copied to the clipboard")
                 elif action == choices[2]:
-                    decrypted_entry = decrypter(entry)
+                    decrypted_entry = decrypter.decrypt(entry)
                     copy(decrypted_entry.password)
                     clipboard_dirty = True
                     prompt_print("Password has been copied to the clipboard")
@@ -62,7 +62,7 @@ async def manage_entry(entry: EncryptedEntry, decrypter: EntryDecrypter) -> None
                         ("Username", entry.username)
                     ])
                 elif action == choices[4]:
-                    decrypted_entry = decrypter(entry)
+                    decrypted_entry = decrypter.decrypt(entry)
                     prompt_print_pairs([
                         ("URL", decrypted_entry.url),
                         ("Title", decrypted_entry.title),

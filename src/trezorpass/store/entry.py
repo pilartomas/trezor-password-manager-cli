@@ -41,7 +41,7 @@ class EntryDecoder:
             username=entry_dict["username"],
             nonce=entry_dict["nonce"],
             encrypted_password=entry_dict["password"]["data"],
-            encrypted_safe_note=entry_dict["password"]["data"],
+            encrypted_safe_note=entry_dict["safe_note"]["data"],
             tags=[]
         )
 
@@ -51,9 +51,9 @@ class EntryDecrypter:
         self.keychain = keychain
 
     def decrypt(self, entry: EncryptedEntry) -> DecryptedEntry:
-        key = self.keychain(entry)
+        key = self.keychain.entry_key(entry)
         password = json.loads(decrypt(key, bytes(entry.encrypted_password)).decode("utf8"))
-        secret_note = json.loads(decrypt(key, bytes(entry.encrypted_safe_note)).decode("utf8"))
+        safe_note = json.loads(decrypt(key, bytes(entry.encrypted_safe_note)).decode("utf8"))
         return DecryptedEntry(
             url=entry.url,
             title=entry.title,
@@ -61,5 +61,5 @@ class EntryDecrypter:
             nonce=entry.nonce,
             tags=entry.tags,
             password=password,
-            secret_note=secret_note
+            safe_note=safe_note
         )

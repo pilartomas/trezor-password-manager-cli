@@ -14,10 +14,6 @@ class Entry:
         self.nonce = nonce
         self.tags: List[Tag] = tags
 
-    @property
-    def label(self) -> str:
-        return self.note if self.note is not None else self.title
-
 
 class Store:
     def __init__(self, name: str, entries: List[Entry], tags: List[Tag]):
