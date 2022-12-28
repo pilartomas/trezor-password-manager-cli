@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TypeVar
 import webbrowser
 
 from trezorlib.exceptions import Cancelled
@@ -8,8 +8,10 @@ from pyperclip import copy
 from trezorpass.store import Entry, EncryptedEntry, EntryDecrypter
 from trezorpass.utils import prompt_print, prompt_print_pairs
 
+T = TypeVar("T", bound=Entry)
 
-async def select_entry(entries: List[Entry]) -> Entry:
+
+async def select_entry(entries: List[T]) -> T:
     """Facilitates user interaction to select an entry from the given list of entries
 
     Returns:
