@@ -8,13 +8,13 @@ from trezorpass.store import StoreLoadError, StoreDecryptError, StoreDecodeError
 from trezorpass.store.sources import Source, DropboxSource, FileSource
 from trezorpass.utils import prompt_print, welcome, goodbye
 from trezorpass.appdata import clear_data
-from trezorpass.helpers import get_client, select_entry, manage_entry
+from trezorpass.interfaces import get_client_manager, select_entry, manage_entry
 
 
 async def cli(store_source: Source):
     welcome()
     try:
-        with await get_client() as client:
+        with await get_client_manager() as client:
             keychain = Keychain(client)
             async with get_store_manager(keychain, store_source) as store:
                 while True:

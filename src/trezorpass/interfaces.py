@@ -1,12 +1,42 @@
 from typing import List, TypeVar
 import webbrowser
+import asyncio
 
-from trezorlib.exceptions import Cancelled
 from InquirerPy import inquirer
 from pyperclip import copy
+from trezorlib.transport import TransportException
+from trezorlib.exceptions import Cancelled
 
+from trezorpass.client import get_default_client_manager
+from trezorpass.utils import animate_dots, prompt_print, prompt_print_pairs
 from trezorpass.store import Entry, EncryptedEntry, EntryDecrypter
-from trezorpass.utils import prompt_print, prompt_print_pairs
+
+
+async def get_client_manager():
+    """Creates default TrezorClientManager
+
+    Returns:
+        Instance of the TrezorClientManager
+
+    Raises:
+        KeyboardInterrupt
+        Exception: Client creation failure
+    """
+    prompt_print("Looking for a Trezor device ", end="", flush=True)
+    animation = animate_dots(5)
+    while True:
+        try:
+            client = get_default_client_manager()
+            print()
+            return client
+        except TransportException:
+            next(animation)  # Keep waiting
+        except Exception:
+            print()
+            print("Unable to access a Trezor device")
+            raise
+        await asyncio.sleep(0.7)
+
 
 T = TypeVar("T", bound=Entry)
 
