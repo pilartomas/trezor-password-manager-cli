@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+
+@dataclass(kw_only=True)
 class Tag:
-    def __init__(self, *, title: str):
-        self.title = title
+    title: str

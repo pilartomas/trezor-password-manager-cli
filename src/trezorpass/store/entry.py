@@ -1,26 +1,24 @@
-from typing import List
+from dataclasses import dataclass
 
 from .tag import Tag
 
 
+@dataclass(kw_only=True)
 class Entry:
-    def __init__(self, *, url: str, title: str, username: str, nonce: str, tags: List[Tag]):
-        self.url = url
-        self.title = title
-        self.username = username
-        self.nonce = nonce
-        self.tags: List[Tag] = tags
+    url: str
+    title: str
+    username: str
+    nonce: str
+    tags: list[Tag]
 
 
+@dataclass(kw_only=True)
 class EncryptedEntry(Entry):
-    def __init__(self, *, encrypted_password: bytes, encrypted_safe_note: bytes, **kwargs):
-        super().__init__(**kwargs)
-        self.encrypted_password = encrypted_password
-        self.encrypted_safe_note = encrypted_safe_note
+    encrypted_password: bytes
+    encrypted_safe_note: bytes
 
 
+@dataclass(kw_only=True)
 class DecryptedEntry(Entry):
-    def __init__(self, *, password: str, safe_note: str, **kwargs):
-        super().__init__(**kwargs)
-        self.password = password
-        self.safe_note = safe_note
+    password: str
+    safe_note: str

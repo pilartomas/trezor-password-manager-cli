@@ -1,11 +1,12 @@
-from typing import List
+from dataclasses import dataclass, field
 
 from .entry import EncryptedEntry
 from .tag import Tag
 
 
+@dataclass(kw_only=True)
 class Store:
-    def __init__(self, *, name: str, entries: List[EncryptedEntry], tags: List[Tag]):
-        self.name = name
-        self.entries = entries
-        self.tags = tags
+    name: str
+    entries: list[EncryptedEntry] = field(default_factory=list)
+    tags: list[Tag] = field(default_factory=list)
+
