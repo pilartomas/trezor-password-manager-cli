@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from .entry import *
 from .store import *
 from .tag import *
@@ -6,27 +8,12 @@ from .decoders import *
 from .decrypters import *
 
 
-class StoreManager:
-    def __init__(self, source: Source, *, loader: StoreLoader, decrypter: StoreDecrypter, decoder: StoreDecoder):
-        self.source = source
-        self.loader = loader
-        self.decrypter = decrypter
-        self.decoder = decoder
+@asynccontextmanager
+async def get_default_store_manager(keychain: Keychain, source: Source):
+    loader = StoreLoader(keychain)
+    decrypter = StoreDecrypter(keychain)
+    decoder = StoreDecoder(keychain, EntryDecoder(), TagDecoder())
 
-    async def __aenter__(self):
-        loaded_store = await self.loader.load(self.source)
-        decrypted_store = self.decrypter.decrypt(loaded_store)
-        self.store = self.decoder.decode(decrypted_store)
-        return self.store
-
-    async def __aexit__(self, *args):
-        pass
-
-
-def get_store_manager(keychain: Keychain, source: Source) -> StoreManager:
-    return StoreManager(
-        source,
-        loader=StoreLoader(keychain),
-        decrypter=StoreDecrypter(keychain),
-        decoder=StoreDecoder(keychain, EntryDecoder(), TagDecoder())
-    )
+    loaded_store = await loader.load(source)
+    decrypted_store = decrypter.decrypt(loaded_store)
+    yield decoder.decode(decrypted_store)
